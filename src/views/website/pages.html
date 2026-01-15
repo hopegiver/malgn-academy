@@ -1,0 +1,206 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">페이지 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">홈페이지의 페이지를 생성하고 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showCreateModal = true">
+                <i class="bi bi-plus-lg me-2"></i>페이지 생성
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">페이지명 검색</label>
+                    <input type="text" class="form-control" placeholder="페이지명 검색" v-model="searchKeyword">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select class="form-select" v-model="filterStatus">
+                        <option value="">전체 상태</option>
+                        <option value="공개">공개</option>
+                        <option value="비공개">비공개</option>
+                        <option value="임시저장">임시저장</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">유형</label>
+                    <select class="form-select" v-model="filterType">
+                        <option value="">전체 유형</option>
+                        <option value="메인">메인</option>
+                        <option value="소개">소개</option>
+                        <option value="안내">안내</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 페이지</div>
+                        <div class="fw-bold fs-4">{{ stats.totalPages }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-file-earmark-richtext"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">공개</div>
+                        <div class="fw-bold fs-4">{{ stats.publishedPages }}개</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">임시저장</div>
+                        <div class="fw-bold fs-4">{{ stats.draftPages }}개</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">월 방문자</div>
+                        <div class="fw-bold fs-4">{{ stats.monthlyVisits }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 60px;">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">페이지명</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 100px;">유형</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 120px;">생성일</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 120px;">수정일</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center" style="width: 100px;">조회수</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 100px;">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center" style="width: 120px;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(page, index) in filteredPages" :key="page.id">
+                            <td class="p-3">{{ pages.length - index }}</td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ page.title }}</div>
+                                <div class="text-muted small">{{ page.url }}</div>
+                            </td>
+                            <td class="p-3"><span class="badge bg-secondary">{{ page.type }}</span></td>
+                            <td class="p-3">{{ page.createdDate }}</td>
+                            <td class="p-3">{{ page.updatedDate }}</td>
+                            <td class="p-3 text-center">{{ page.views }}</td>
+                            <td class="p-3">
+                                <span class="badge" :class="{
+                                    'bg-success': page.status === '공개',
+                                    'bg-secondary': page.status === '비공개',
+                                    'bg-warning': page.status === '임시저장'
+                                }" style="font-size: 0.8rem;">{{ page.status }}</span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="editPage(page)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="deletePage(page.id)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지 생성/수정 모달 -->
+    <div class="modal fade" :class="{ show: showCreateModal, 'd-block': showCreateModal }" tabindex="-1" v-if="showCreateModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ currentPage.id ? '페이지 수정' : '페이지 생성' }}</h5>
+                    <button type="button" class="btn-close" @click="showCreateModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">페이지명 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="currentPage.title" placeholder="페이지명 입력">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">URL <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="currentPage.url" placeholder="/about">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">유형</label>
+                            <select class="form-select" v-model="currentPage.type">
+                                <option value="메인">메인</option>
+                                <option value="소개">소개</option>
+                                <option value="안내">안내</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">상태</label>
+                            <select class="form-select" v-model="currentPage.status">
+                                <option value="공개">공개</option>
+                                <option value="비공개">비공개</option>
+                                <option value="임시저장">임시저장</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">메타 키워드</label>
+                            <input type="text" class="form-control" v-model="currentPage.metaKeyword" placeholder="SEO 키워드">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">페이지 내용</label>
+                            <textarea class="form-control" rows="15" v-model="currentPage.content"
+                                      placeholder="페이지 내용을 입력하세요 (HTML 지원)"></textarea>
+                            <small class="text-muted">HTML 태그를 사용할 수 있습니다.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showCreateModal = false">취소</button>
+                    <button type="button" class="btn btn-warning me-auto" @click="savePage('임시저장')">임시저장</button>
+                    <button type="button" class="btn btn-primary" @click="savePage('공개')">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showCreateModal }" v-if="showCreateModal"></div>
+</div>

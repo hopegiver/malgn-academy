@@ -1,0 +1,178 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">메뉴 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">홈페이지의 메뉴 구조를 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showCreateModal = true">
+                <i class="bi bi-plus-lg me-2"></i>메뉴 추가
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 메뉴</div>
+                        <div class="fw-bold fs-4">{{ stats.totalMenus }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-menu-button-wide"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">1뎁스 메뉴</div>
+                        <div class="fw-bold fs-4">{{ stats.parentMenus }}개</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-list"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">활성 메뉴</div>
+                        <div class="fw-bold fs-4">{{ stats.activeMenus }}개</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메뉴 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 60px;">순서</th>
+                            <th class="fw-semibold p-3 border-bottom-2">메뉴명</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 200px;">링크</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 100px;">뎁스</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 100px;">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center" style="width: 150px;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="menu in menus" :key="menu.id">
+                            <!-- 1뎁스 메뉴 -->
+                            <tr>
+                                <td class="p-3">{{ menu.order }}</td>
+                                <td class="p-3">
+                                    <div class="fw-bold">{{ menu.name }}</div>
+                                </td>
+                                <td class="p-3"><code>{{ menu.url }}</code></td>
+                                <td class="p-3"><span class="badge bg-primary">1뎁스</span></td>
+                                <td class="p-3">
+                                    <span class="badge" :class="{
+                                        'bg-success': menu.isActive,
+                                        'bg-secondary': !menu.isActive
+                                    }" style="font-size: 0.8rem;">{{ menu.isActive ? '활성' : '비활성' }}</span>
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1" @click="editMenu(menu)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary me-1" @click="moveUp(menu.id)">
+                                        <i class="bi bi-arrow-up"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @click="deleteMenu(menu.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- 2뎁스 메뉴 -->
+                            <tr v-for="child in menu.children" :key="child.id" class="bg-light">
+                                <td class="p-3"></td>
+                                <td class="p-3">
+                                    <div class="ms-4">
+                                        <i class="bi bi-arrow-return-right me-2 text-muted"></i>
+                                        <span>{{ child.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="p-3"><code>{{ child.url }}</code></td>
+                                <td class="p-3"><span class="badge bg-secondary">2뎁스</span></td>
+                                <td class="p-3">
+                                    <span class="badge" :class="{
+                                        'bg-success': child.isActive,
+                                        'bg-secondary': !child.isActive
+                                    }" style="font-size: 0.8rem;">{{ child.isActive ? '활성' : '비활성' }}</span>
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1" @click="editMenu(child, menu.id)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @click="deleteMenu(child.id, menu.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메뉴 추가/수정 모달 -->
+    <div class="modal fade" :class="{ show: showCreateModal, 'd-block': showCreateModal }" tabindex="-1" v-if="showCreateModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ currentMenu.id ? '메뉴 수정' : '메뉴 추가' }}</h5>
+                    <button type="button" class="btn-close" @click="showCreateModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">메뉴명 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" v-model="currentMenu.name" placeholder="메뉴명 입력">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">링크 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" v-model="currentMenu.url" placeholder="/page-url">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">상위 메뉴</label>
+                        <select class="form-select" v-model="currentMenu.parentId">
+                            <option value="">1뎁스 (최상위)</option>
+                            <option v-for="menu in menus" :key="menu.id" :value="menu.id">{{ menu.name }}</option>
+                        </select>
+                        <small class="text-muted">선택하지 않으면 1뎁스 메뉴로 생성됩니다.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">순서</label>
+                        <input type="number" class="form-control" v-model.number="currentMenu.order" placeholder="1">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" v-model="currentMenu.isActive" id="menuActive">
+                            <label class="form-check-label fw-semibold" for="menuActive">활성화</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showCreateModal = false">취소</button>
+                    <button type="button" class="btn btn-primary" @click="saveMenu">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showCreateModal }" v-if="showCreateModal"></div>
+</div>

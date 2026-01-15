@@ -1,0 +1,202 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">매출 분석</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원의 매출 현황과 통계를 분석합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="exportReport">
+                <i class="bi bi-download me-2"></i>매출 보고서
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번달 매출</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(stats.currentRevenue) }}</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">수납률</div>
+                        <div class="fw-bold fs-4">{{ stats.collectionRate }}%</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">미수금</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(stats.unpaid) }}</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전월 대비</div>
+                        <div class="fw-bold fs-4 text-success">+{{ stats.growthRate }}%</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 기간 선택 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold small">조회 기간</label>
+                    <select class="form-select" v-model="period" @change="handlePeriodChange">
+                        <option value="month">최근 1개월</option>
+                        <option value="quarter">최근 3개월</option>
+                        <option value="half">최근 6개월</option>
+                        <option value="year">최근 1년</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold small">카테고리</label>
+                    <select class="form-select" v-model="filters.category" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="tuition">수강료</option>
+                        <option value="material">교재비</option>
+                        <option value="event">특강</option>
+                        <option value="etc">기타</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 월별 매출 현황 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">월별 매출 현황</h5>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">월</th>
+                            <th class="fw-semibold p-3 border-bottom-2">총 매출</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수납액</th>
+                            <th class="fw-semibold p-3 border-bottom-2">미수금</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수납률</th>
+                            <th class="fw-semibold p-3 border-bottom-2">전월 대비</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="revenue in monthlyRevenue" :key="revenue.month">
+                            <td class="p-3">{{ revenue.month }}</td>
+                            <td class="p-3 fw-semibold">{{ formatCurrency(revenue.total) }}</td>
+                            <td class="p-3 text-success">{{ formatCurrency(revenue.collected) }}</td>
+                            <td class="p-3 text-danger">{{ formatCurrency(revenue.unpaid) }}</td>
+                            <td class="p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" :style="{ width: revenue.collectionRate + '%' }"></div>
+                                    </div>
+                                    <span class="small">{{ revenue.collectionRate }}%</span>
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                <span :class="revenue.growth >= 0 ? 'text-success' : 'text-danger'">
+                                    {{ revenue.growth >= 0 ? '+' : '' }}{{ revenue.growth }}%
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 카테고리별 매출 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">카테고리별 매출</h5>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">카테고리</th>
+                            <th class="fw-semibold p-3 border-bottom-2">매출액</th>
+                            <th class="fw-semibold p-3 border-bottom-2">비중</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수납률</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="category in categoryRevenue" :key="category.name">
+                            <td class="p-3">{{ category.name }}</td>
+                            <td class="p-3 fw-semibold">{{ formatCurrency(category.amount) }}</td>
+                            <td class="p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                        <div class="progress-bar" :style="{ width: category.ratio + '%' }"></div>
+                                    </div>
+                                    <span class="small">{{ category.ratio }}%</span>
+                                </div>
+                            </td>
+                            <td class="p-3">{{ category.collectionRate }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 학년별 매출 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">학년별 매출</h5>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">학년</th>
+                            <th class="fw-semibold p-3 border-bottom-2">재원생</th>
+                            <th class="fw-semibold p-3 border-bottom-2">매출액</th>
+                            <th class="fw-semibold p-3 border-bottom-2">1인당 평균</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수납률</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="grade in gradeRevenue" :key="grade.name">
+                            <td class="p-3">{{ grade.name }}</td>
+                            <td class="p-3">{{ grade.students }}명</td>
+                            <td class="p-3 fw-semibold">{{ formatCurrency(grade.revenue) }}</td>
+                            <td class="p-3">{{ formatCurrency(grade.avgPerStudent) }}</td>
+                            <td class="p-3">{{ grade.collectionRate }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

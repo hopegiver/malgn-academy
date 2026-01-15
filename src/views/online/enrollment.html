@@ -1,0 +1,267 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">수강 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학생들의 온라인 강의 수강 현황을 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showEnrollModal = true">
+                <i class="bi bi-plus-lg me-2"></i>수강 등록
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">검색</label>
+                    <input type="text" class="form-control" placeholder="학생명 또는 강의명 검색" v-model="searchKeyword">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">강의</label>
+                    <select class="form-select" v-model="filterLecture">
+                        <option value="">전체 강의</option>
+                        <option value="중등 수학 기초 완성">중등 수학 기초 완성</option>
+                        <option value="고등 영문법 정복">고등 영문법 정복</option>
+                        <option value="물리학 입문">물리학 입문</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select class="form-select" v-model="filterStatus">
+                        <option value="">전체 상태</option>
+                        <option value="수강중">수강중</option>
+                        <option value="완료">완료</option>
+                        <option value="중단">중단</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 수강생</div>
+                        <div class="fw-bold fs-4">{{ stats.totalStudents }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">수강중</div>
+                        <div class="fw-bold fs-4">{{ stats.activeStudents }}명</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-play-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">완료</div>
+                        <div class="fw-bold fs-4">{{ stats.completedStudents }}명</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">평균 진도율</div>
+                        <div class="fw-bold fs-4">{{ stats.avgProgress }}%</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수강 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">학생명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">강의명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">시작일</th>
+                            <th class="fw-semibold p-3 border-bottom-2">마지막 학습</th>
+                            <th class="fw-semibold p-3 border-bottom-2">진도율</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(enrollment, index) in filteredEnrollments" :key="enrollment.id">
+                            <td class="p-3">{{ enrollments.length - index }}</td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ enrollment.studentName }}</div>
+                                <div class="text-muted small">{{ enrollment.studentGrade }}</div>
+                            </td>
+                            <td class="p-3">{{ enrollment.lectureName }}</td>
+                            <td class="p-3">{{ enrollment.startDate }}</td>
+                            <td class="p-3">{{ enrollment.lastAccess }}</td>
+                            <td class="p-3">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" :style="{ width: enrollment.progress + '%' }"
+                                         :class="{
+                                             'bg-success': enrollment.progress >= 80,
+                                             'bg-primary': enrollment.progress >= 50 && enrollment.progress < 80,
+                                             'bg-warning': enrollment.progress < 50
+                                         }">
+                                        {{ enrollment.progress }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" :class="{
+                                    'bg-primary': enrollment.status === '수강중',
+                                    'bg-success': enrollment.status === '완료',
+                                    'bg-secondary': enrollment.status === '중단'
+                                }" style="font-size: 0.8rem;">{{ enrollment.status }}</span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewDetail(enrollment)">
+                                    상세
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="cancelEnrollment(enrollment.id)">
+                                    취소
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수강 등록 모달 -->
+    <div class="modal fade" :class="{ show: showEnrollModal, 'd-block': showEnrollModal }" tabindex="-1" v-if="showEnrollModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">수강 등록</h5>
+                    <button type="button" class="btn-close" @click="showEnrollModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">학생 선택 <span class="text-danger">*</span></label>
+                        <select class="form-select" v-model="newEnrollment.studentId">
+                            <option value="">선택</option>
+                            <option value="1">김민준 (중1)</option>
+                            <option value="2">이서연 (중2)</option>
+                            <option value="3">박지호 (중3)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">강의 선택 <span class="text-danger">*</span></label>
+                        <select class="form-select" v-model="newEnrollment.lectureId">
+                            <option value="">선택</option>
+                            <option value="1">중등 수학 기초 완성</option>
+                            <option value="2">고등 영문법 정복</option>
+                            <option value="3">물리학 입문</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">시작일</label>
+                        <input type="date" class="form-control" v-model="newEnrollment.startDate">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showEnrollModal = false">취소</button>
+                    <button type="button" class="btn btn-primary" @click="saveEnrollment">등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showEnrollModal }" v-if="showEnrollModal"></div>
+
+    <!-- 수강 상세 모달 -->
+    <div class="modal fade" :class="{ show: showDetailModal, 'd-block': showDetailModal }" tabindex="-1" v-if="showDetailModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">수강 상세 정보</h5>
+                    <button type="button" class="btn-close" @click="showDetailModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">학생명</label>
+                            <div>{{ selectedEnrollment.studentName }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">학년</label>
+                            <div>{{ selectedEnrollment.studentGrade }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">강의명</label>
+                            <div>{{ selectedEnrollment.lectureName }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">진도율</label>
+                            <div>{{ selectedEnrollment.progress }}%</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">시작일</label>
+                            <div>{{ selectedEnrollment.startDate }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">마지막 학습</label>
+                            <div>{{ selectedEnrollment.lastAccess }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">학습 기록</label>
+                            <div class="border rounded p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>1강. 강의 소개</span>
+                                    <span class="badge bg-success" style="font-size: 0.8rem;">완료</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>2강. 기본 개념 이해</span>
+                                    <span class="badge bg-success" style="font-size: 0.8rem;">완료</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>3강. 실습 문제 풀이</span>
+                                    <span class="badge bg-primary" style="font-size: 0.8rem;">학습중</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>4강. 심화 학습</span>
+                                    <span class="badge bg-secondary" style="font-size: 0.8rem;">미학습</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showDetailModal = false">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showDetailModal }" v-if="showDetailModal"></div>
+</div>

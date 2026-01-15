@@ -1,0 +1,291 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">메시지 발송</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">SMS와 알림톡을 발송하고 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showSendModal">
+                <i class="bi bi-send-fill me-2"></i>메시지 발송
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번달 발송</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-chat-left-text-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">성공</div>
+                        <div class="fw-bold fs-4">{{ stats.success }}건</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">실패</div>
+                        <div class="fw-bold fs-4">{{ stats.failed }}건</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">발송 대기</div>
+                        <div class="fw-bold fs-4">{{ stats.pending }}건</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">메시지 유형</label>
+                    <select class="form-select" v-model="filters.type" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="sms">SMS</option>
+                        <option value="kakao">알림톡</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">발송 상태</label>
+                    <select class="form-select" v-model="filters.status" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="pending">대기중</option>
+                        <option value="success">성공</option>
+                        <option value="failed">실패</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">날짜</label>
+                    <input type="date" class="form-control" v-model="filters.date" @change="handleFilter">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 발송 내역 테이블 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">유형</th>
+                            <th class="fw-semibold p-3 border-bottom-2">제목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수신자</th>
+                            <th class="fw-semibold p-3 border-bottom-2">발송일시</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="message in filteredMessages" :key="message.id">
+                            <td class="p-3">{{ message.id }}</td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getTypeBadgeClass(message.type)">
+                                    {{ getTypeText(message.type) }}
+                                </span>
+                            </td>
+                            <td class="p-3">{{ message.title }}</td>
+                            <td class="p-3">
+                                <div>{{ message.recipientType }}</div>
+                                <div class="text-muted small">{{ message.recipientCount }}명</div>
+                            </td>
+                            <td class="p-3">{{ message.sentAt }}</td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getStatusBadgeClass(message.status)">
+                                    {{ getStatusText(message.status) }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary" @click="viewMessage(message)">
+                                    상세
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredMessages.length === 0">
+                            <td colspan="7" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메시지 발송 모달 -->
+    <div class="modal fade" id="sendModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">메시지 발송</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">메시지 유형</label>
+                        <select class="form-select" v-model="sendForm.type">
+                            <option value="sms">SMS</option>
+                            <option value="kakao">알림톡</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">수신자 그룹</label>
+                        <select class="form-select" v-model="sendForm.recipientType">
+                            <option value="all">전체</option>
+                            <option value="students">학생</option>
+                            <option value="parents">학부모</option>
+                            <option value="active">재원생</option>
+                            <option value="custom">직접 선택</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" v-if="sendForm.recipientType === 'custom'">
+                        <label class="form-label fw-semibold">수신자 번호 (쉼표로 구분)</label>
+                        <textarea class="form-control" v-model="sendForm.customRecipients" rows="3" placeholder="010-1234-5678, 010-2345-6789"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">템플릿 선택</label>
+                        <select class="form-select" v-model="sendForm.template" @change="applyTemplate">
+                            <option value="">직접 입력</option>
+                            <option value="attendance">출석 확인</option>
+                            <option value="payment">수강료 납부 안내</option>
+                            <option value="schedule">수업 일정 안내</option>
+                            <option value="holiday">휴무 안내</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">제목</label>
+                        <input type="text" class="form-control" v-model="sendForm.title" placeholder="메시지 제목">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">내용</label>
+                        <textarea class="form-control" v-model="sendForm.content" rows="6" placeholder="메시지 내용을 입력하세요"></textarea>
+                        <div class="form-text">{{ sendForm.content.length }} / 2000자</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">발송 시간</label>
+                        <div class="row g-2">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" v-model="sendForm.scheduleType" value="immediate" id="immediate">
+                                    <label class="form-check-label" for="immediate">즉시 발송</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" v-model="sendForm.scheduleType" value="scheduled" id="scheduled">
+                                    <label class="form-check-label" for="scheduled">예약 발송</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" v-if="sendForm.scheduleType === 'scheduled'">
+                        <label class="form-label fw-semibold">예약 일시</label>
+                        <input type="datetime-local" class="form-control" v-model="sendForm.scheduledAt">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click="sendMessage">
+                        <i class="bi bi-send-fill me-2"></i>발송
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 모달 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">발송 내역 상세</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="selectedMessage">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">메시지 유형</label>
+                            <div>{{ getTypeText(selectedMessage.type) }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">제목</label>
+                            <div>{{ selectedMessage.title }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">내용</label>
+                            <div class="p-3 bg-light rounded-3">{{ selectedMessage.content }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">수신자 그룹</label>
+                            <div>{{ selectedMessage.recipientType }} ({{ selectedMessage.recipientCount }}명)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">발송 일시</label>
+                            <div>{{ selectedMessage.sentAt }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">발송 상태</label>
+                            <div>
+                                <span class="badge" :class="getStatusBadgeClass(selectedMessage.status)">
+                                    {{ getStatusText(selectedMessage.status) }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3" v-if="selectedMessage.failReason">
+                            <label class="form-label fw-semibold">실패 사유</label>
+                            <div class="text-danger">{{ selectedMessage.failReason }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

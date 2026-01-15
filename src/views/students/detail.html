@@ -1,0 +1,322 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">학생 상세정보</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학생의 상세 정보와 수강 이력을 확인합니다</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="#/students/list" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>목록으로
+                </a>
+                <button class="btn btn-primary" @click="editStudent">
+                    <i class="bi bi-pencil me-2"></i>수정
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 학생 기본정보 카드 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-auto">
+                    <div class="user-avatar rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ student.initial }}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-2">{{ student.name }}</h3>
+                            <div class="d-flex gap-3 mb-3">
+                                <span class="badge" :class="getStatusBadgeClass(student.status)">
+                                    {{ getStatusText(student.status) }}
+                                </span>
+                                <span class="text-secondary">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    등록일: {{ student.registeredAt }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <div class="text-secondary small mb-1">학년 / 학교</div>
+                                <div class="fw-semibold">{{ student.gradeText }} / {{ student.school }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-secondary small mb-1">생년월일 / 성별</div>
+                                <div class="fw-semibold">{{ student.birthDate }} / {{ student.gender }}</div>
+                            </div>
+                            <div>
+                                <div class="text-secondary small mb-1">연락처</div>
+                                <div class="fw-semibold">{{ student.phone }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <div class="text-secondary small mb-1">학부모</div>
+                                <div class="fw-semibold">{{ student.parentName }} ({{ student.parentRelation }})</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-secondary small mb-1">학부모 연락처</div>
+                                <div class="fw-semibold">{{ student.parentPhone }}</div>
+                            </div>
+                            <div>
+                                <div class="text-secondary small mb-1">주소</div>
+                                <div class="fw-semibold">{{ student.address }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 탭 메뉴 -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'classes' }" href="#" @click.prevent="activeTab = 'classes'">
+                <i class="bi bi-book me-2"></i>수강 현황
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'attendance' }" href="#" @click.prevent="activeTab = 'attendance'">
+                <i class="bi bi-calendar-check me-2"></i>출결 현황
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'grades' }" href="#" @click.prevent="activeTab = 'grades'">
+                <i class="bi bi-graph-up me-2"></i>성적 현황
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'counseling' }" href="#" @click.prevent="activeTab = 'counseling'">
+                <i class="bi bi-chat-left-text me-2"></i>상담 기록
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'payments' }" href="#" @click.prevent="activeTab = 'payments'">
+                <i class="bi bi-credit-card me-2"></i>수납 현황
+            </a>
+        </li>
+    </ul>
+
+    <!-- 탭 컨텐츠 -->
+    <div class="tab-content">
+        <!-- 수강 현황 -->
+        <div v-show="activeTab === 'classes'">
+            <div class="card border rounded-3 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="fw-semibold p-3 border-bottom-2">과목</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">강사</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">수업시간</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">수강기간</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">잔여횟수</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="cls in classes" :key="cls.id">
+                                    <td class="p-3 fw-semibold">{{ cls.subject }}</td>
+                                    <td class="p-3">{{ cls.teacher }}</td>
+                                    <td class="p-3">{{ cls.schedule }}</td>
+                                    <td class="p-3">{{ cls.startDate }} ~ {{ cls.endDate }}</td>
+                                    <td class="p-3">
+                                        <span class="fw-semibold" :class="cls.remainingCount < 5 ? 'text-danger' : ''">
+                                            {{ cls.remainingCount }}회 / {{ cls.totalCount }}회
+                                        </span>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="badge bg-success">수강중</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 출결 현황 -->
+        <div v-show="activeTab === 'attendance'">
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-3">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">출석률</div>
+                        <div class="fw-bold fs-4">{{ attendanceStats.rate }}%</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">출석</div>
+                        <div class="fw-bold fs-4">{{ attendanceStats.present }}회</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">결석</div>
+                        <div class="fw-bold fs-4">{{ attendanceStats.absent }}회</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">지각</div>
+                        <div class="fw-bold fs-4">{{ attendanceStats.late }}회</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border rounded-3 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="fw-semibold p-3 border-bottom-2">날짜</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">과목</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">출결상태</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">비고</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="record in attendanceRecords" :key="record.id">
+                                    <td class="p-3">{{ record.date }}</td>
+                                    <td class="p-3">{{ record.subject }}</td>
+                                    <td class="p-3">
+                                        <span class="badge" :class="getAttendanceBadgeClass(record.status)">
+                                            {{ getAttendanceText(record.status) }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-muted">{{ record.note }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 성적 현황 -->
+        <div v-show="activeTab === 'grades'">
+            <div class="card border rounded-3 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="fw-semibold p-3 border-bottom-2">시험일</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">과목</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">시험명</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">점수</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">등급</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">석차</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="grade in grades" :key="grade.id">
+                                    <td class="p-3">{{ grade.examDate }}</td>
+                                    <td class="p-3">{{ grade.subject }}</td>
+                                    <td class="p-3">{{ grade.examName }}</td>
+                                    <td class="p-3 fw-bold">{{ grade.score }}점</td>
+                                    <td class="p-3">
+                                        <span class="badge bg-primary">{{ grade.grade }}등급</span>
+                                    </td>
+                                    <td class="p-3">{{ grade.rank }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상담 기록 -->
+        <div v-show="activeTab === 'counseling'">
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary" @click="addCounseling">
+                    <i class="bi bi-plus-circle me-2"></i>상담 추가
+                </button>
+            </div>
+            <div class="card border rounded-3" v-for="counsel in counselingRecords" :key="counsel.id" class="mb-3">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">{{ counsel.title }}</h5>
+                            <div class="text-secondary small">
+                                <i class="bi bi-calendar3 me-1"></i>{{ counsel.date }}
+                                <i class="bi bi-person ms-3 me-1"></i>{{ counsel.counselor }}
+                            </div>
+                        </div>
+                        <span class="badge" :class="getCounselingTypeBadge(counsel.type)">
+                            {{ getCounselingTypeText(counsel.type) }}
+                        </span>
+                    </div>
+                    <div class="text-secondary">{{ counsel.content }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 수납 현황 -->
+        <div v-show="activeTab === 'payments'">
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-4">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">총 납부액</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(paymentStats.totalPaid) }}</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">미납액</div>
+                        <div class="fw-bold fs-4 text-danger">{{ formatCurrency(paymentStats.unpaid) }}</div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card rounded-3 p-3">
+                        <div class="text-secondary small mb-1">환불액</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(paymentStats.refund) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border rounded-3 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="fw-semibold p-3 border-bottom-2">날짜</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">항목</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">금액</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">결제수단</th>
+                                    <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="payment in paymentRecords" :key="payment.id">
+                                    <td class="p-3">{{ payment.date }}</td>
+                                    <td class="p-3">{{ payment.item }}</td>
+                                    <td class="p-3 fw-semibold">{{ formatCurrency(payment.amount) }}</td>
+                                    <td class="p-3">{{ payment.method }}</td>
+                                    <td class="p-3">
+                                        <span class="badge" :class="getPaymentStatusBadge(payment.status)">
+                                            {{ getPaymentStatusText(payment.status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

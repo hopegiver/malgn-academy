@@ -1,0 +1,252 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">공지사항</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원 공지사항을 등록하고 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showNoticeModal(null)">
+                <i class="bi bi-megaphone-fill me-2"></i>공지 등록
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 공지</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-megaphone-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">중요 공지</div>
+                        <div class="fw-bold fs-4">{{ stats.important }}건</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번주 공지</div>
+                        <div class="fw-bold fs-4">{{ stats.thisWeek }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-week-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">총 조회수</div>
+                        <div class="fw-bold fs-4">{{ stats.totalViews }}</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-eye-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">검색</label>
+                    <input type="text" class="form-control" v-model="searchKeyword" @input="handleSearch" placeholder="제목, 내용으로 검색">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">카테고리</label>
+                    <select class="form-select" v-model="filters.category" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="general">일반</option>
+                        <option value="schedule">수업</option>
+                        <option value="event">행사</option>
+                        <option value="payment">수강료</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">중요도</label>
+                    <select class="form-select" v-model="filters.important" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="true">중요</option>
+                        <option value="false">일반</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지사항 목록 테이블 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">카테고리</th>
+                            <th class="fw-semibold p-3 border-bottom-2">제목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">작성자</th>
+                            <th class="fw-semibold p-3 border-bottom-2">작성일</th>
+                            <th class="fw-semibold p-3 border-bottom-2">조회수</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="notice in filteredNotices" :key="notice.id">
+                            <td class="p-3">
+                                <span v-if="notice.important" class="badge bg-danger me-1" style="font-size: 0.8rem;">중요</span>
+                                {{ notice.id }}
+                            </td>
+                            <td class="p-3">
+                                <span class="badge bg-secondary" style="font-size: 0.8rem;">
+                                    {{ getCategoryText(notice.category) }}
+                                </span>
+                            </td>
+                            <td class="p-3">
+                                <div class="fw-semibold" :class="{ 'text-danger': notice.important }">
+                                    {{ notice.title }}
+                                </div>
+                            </td>
+                            <td class="p-3">{{ notice.author }}</td>
+                            <td class="p-3">{{ notice.createdAt }}</td>
+                            <td class="p-3">{{ notice.views }}</td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewNotice(notice)">
+                                    상세
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary me-1" @click="showNoticeModal(notice)">
+                                    수정
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="deleteNotice(notice)">
+                                    삭제
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredNotices.length === 0">
+                            <td colspan="7" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지 등록/수정 모달 -->
+    <div class="modal fade" id="noticeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">{{ noticeForm.id ? '공지 수정' : '공지 등록' }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">카테고리</label>
+                        <select class="form-select" v-model="noticeForm.category">
+                            <option value="general">일반</option>
+                            <option value="schedule">수업</option>
+                            <option value="event">행사</option>
+                            <option value="payment">수강료</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">제목</label>
+                        <input type="text" class="form-control" v-model="noticeForm.title" placeholder="공지 제목">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">내용</label>
+                        <textarea class="form-control" v-model="noticeForm.content" rows="8" placeholder="공지 내용을 입력하세요"></textarea>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" v-model="noticeForm.important" id="important">
+                        <label class="form-check-label" for="important">
+                            중요 공지로 표시
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" v-model="noticeForm.pinned" id="pinned">
+                        <label class="form-check-label" for="pinned">
+                            상단 고정
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" v-model="noticeForm.sendNotification" id="sendNotification">
+                        <label class="form-check-label" for="sendNotification">
+                            알림 메시지 발송
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click="saveNotice">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지 상세 모달 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">공지사항 상세</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="selectedNotice">
+                        <div class="mb-3">
+                            <span class="badge bg-secondary me-2">{{ getCategoryText(selectedNotice.category) }}</span>
+                            <span class="badge bg-danger" v-if="selectedNotice.important">중요</span>
+                        </div>
+                        <div class="mb-3">
+                            <h4 class="fw-bold">{{ selectedNotice.title }}</h4>
+                        </div>
+                        <div class="mb-3 pb-3 border-bottom">
+                            <span class="text-muted small me-3">작성자: {{ selectedNotice.author }}</span>
+                            <span class="text-muted small me-3">작성일: {{ selectedNotice.createdAt }}</span>
+                            <span class="text-muted small">조회수: {{ selectedNotice.views }}</span>
+                        </div>
+                        <div class="mb-3" style="white-space: pre-wrap;">
+                            {{ selectedNotice.content }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" @click="showNoticeModal(selectedNotice)">수정</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

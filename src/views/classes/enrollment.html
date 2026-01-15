@@ -1,0 +1,236 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">수강 신청</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학생의 수업 수강을 신청하고 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showEnrollModal">
+                <i class="bi bi-plus-circle me-2"></i>수강 신청
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">학생 검색</label>
+                    <input type="text" class="form-control" v-model="searchKeyword" @input="handleSearch" placeholder="학생명으로 검색">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">수업</label>
+                    <select class="form-select" v-model="filters.classId" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="1">고등수학 심화반</option>
+                        <option value="2">중등영어 기초반</option>
+                        <option value="3">고등물리 심화반</option>
+                        <option value="4">중등수학 중급반</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select class="form-select" v-model="filters.status" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="active">수강중</option>
+                        <option value="pending">대기중</option>
+                        <option value="completed">수강완료</option>
+                        <option value="cancelled">취소</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 수강</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">수강중</div>
+                        <div class="fw-bold fs-4">{{ stats.active }}건</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">대기중</div>
+                        <div class="fw-bold fs-4">{{ stats.pending }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번달 신규</div>
+                        <div class="fw-bold fs-4">{{ stats.newThisMonth }}건</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-plus"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수강 신청 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">학생명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수업명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">신청일</th>
+                            <th class="fw-semibold p-3 border-bottom-2">시작일</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수강료</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="enroll in filteredEnrollments" :key="enroll.id">
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ enroll.studentName }}</div>
+                                <div class="text-muted small">{{ enroll.grade }}</div>
+                            </td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ enroll.className }}</div>
+                                <div class="text-muted small">{{ enroll.teacher }}</div>
+                            </td>
+                            <td class="p-3">{{ enroll.appliedDate }}</td>
+                            <td class="p-3">{{ enroll.startDate }}</td>
+                            <td class="p-3">
+                                <span class="fw-semibold">{{ formatCurrency(enroll.fee) }}원</span>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" :class="getStatusBadgeClass(enroll.status)">
+                                    {{ getStatusText(enroll.status) }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button v-if="enroll.status === 'pending'" class="btn btn-sm btn-outline-success me-1" @click="approveEnrollment(enroll)">
+                                    승인
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary me-1" @click="editEnrollment(enroll)">
+                                    수정
+                                </button>
+                                <button v-if="enroll.status === 'pending' || enroll.status === 'active'" class="btn btn-sm btn-outline-danger" @click="cancelEnrollment(enroll)">
+                                    취소
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredEnrollments.length === 0">
+                            <td colspan="7" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: 수강 신청 -->
+    <div class="modal fade" :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }" tabindex="-1" @click.self="closeModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">{{ modalMode === 'add' ? '수강 신청' : '수강 정보 수정' }}</h5>
+                    <button type="button" class="btn-close" @click="closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="handleSubmit">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">학생 선택 <span class="text-danger">*</span></label>
+                            <select class="form-select" v-model="modalData.studentId" required :disabled="modalMode === 'edit'">
+                                <option value="">선택</option>
+                                <option value="1">김철수 (고1)</option>
+                                <option value="2">이영희 (중2)</option>
+                                <option value="3">박민수 (고3)</option>
+                                <option value="4">최지훈 (중1)</option>
+                                <option value="5">정수진 (고2)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">수업 선택 <span class="text-danger">*</span></label>
+                            <select class="form-select" v-model="modalData.classId" required @change="handleClassChange">
+                                <option value="">선택</option>
+                                <option value="1">고등수학 심화반 (월/수/금 18:00-20:00)</option>
+                                <option value="2">중등영어 기초반 (화/목 17:00-19:00)</option>
+                                <option value="3">고등물리 심화반 (월/수 19:00-21:00)</option>
+                                <option value="4">중등수학 중급반 (화/목/금 18:00-20:00)</option>
+                            </select>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">신청일 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" v-model="modalData.appliedDate" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">시작일 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" v-model="modalData.startDate" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수강료 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" v-model="modalData.fee" required placeholder="월 수강료">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">할인율 (%)</label>
+                                <input type="number" class="form-control" v-model="modalData.discount" min="0" max="100" placeholder="할인율 입력">
+                            </div>
+                        </div>
+                        <div class="mb-3" v-if="modalData.discount > 0">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                할인 적용 후 금액: <strong>{{ formatCurrency(calculateDiscountedFee()) }}원</strong>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">메모</label>
+                            <textarea class="form-control" v-model="modalData.memo" rows="3" placeholder="특이사항이나 메모를 입력하세요"></textarea>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" @click="closeModal">취소</button>
+                            <button type="submit" class="btn btn-primary">
+                                {{ modalMode === 'add' ? '신청' : '수정' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }" v-if="showModal"></div>
+</div>

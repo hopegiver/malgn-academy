@@ -1,0 +1,200 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">운영 현황</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원의 운영 통계와 현황을 확인합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="exportReport">
+                <i class="bi bi-download me-2"></i>보고서 다운로드
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">재원생</div>
+                        <div class="fw-bold fs-4">{{ stats.currentStudents }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">신규 등록</div>
+                        <div class="fw-bold fs-4">{{ stats.newStudents }}명</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">평균 출석률</div>
+                        <div class="fw-bold fs-4">{{ stats.attendanceRate }}%</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">수강 과목수</div>
+                        <div class="fw-bold fs-4">{{ stats.totalCourses }}개</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-book-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 기간 선택 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold small">조회 기간</label>
+                    <select class="form-select" v-model="period" @change="handlePeriodChange">
+                        <option value="month">최근 1개월</option>
+                        <option value="quarter">최근 3개월</option>
+                        <option value="half">최근 6개월</option>
+                        <option value="year">최근 1년</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold small">학년</label>
+                    <select class="form-select" v-model="filters.grade" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="elementary">초등부</option>
+                        <option value="middle">중등부</option>
+                        <option value="high">고등부</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 학년별 재원생 현황 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">학년별 재원생 현황</h5>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">학년</th>
+                            <th class="fw-semibold p-3 border-bottom-2">재원생</th>
+                            <th class="fw-semibold p-3 border-bottom-2">신규</th>
+                            <th class="fw-semibold p-3 border-bottom-2">퇴원</th>
+                            <th class="fw-semibold p-3 border-bottom-2">출석률</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="grade in gradeStats" :key="grade.name">
+                            <td class="p-3">{{ grade.name }}</td>
+                            <td class="p-3">{{ grade.current }}명</td>
+                            <td class="p-3 text-success">+{{ grade.new }}명</td>
+                            <td class="p-3 text-danger">-{{ grade.left }}명</td>
+                            <td class="p-3">{{ grade.attendance }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 월별 운영 추이 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">월별 운영 추이</h5>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">월</th>
+                            <th class="fw-semibold p-3 border-bottom-2">재원생</th>
+                            <th class="fw-semibold p-3 border-bottom-2">신규 등록</th>
+                            <th class="fw-semibold p-3 border-bottom-2">퇴원</th>
+                            <th class="fw-semibold p-3 border-bottom-2">출석률</th>
+                            <th class="fw-semibold p-3 border-bottom-2">평균 수강</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="trend in monthlyTrends" :key="trend.month">
+                            <td class="p-3">{{ trend.month }}</td>
+                            <td class="p-3">{{ trend.students }}명</td>
+                            <td class="p-3">
+                                <span class="text-success">+{{ trend.newStudents }}명</span>
+                            </td>
+                            <td class="p-3">
+                                <span class="text-danger">-{{ trend.leftStudents }}명</span>
+                            </td>
+                            <td class="p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                        <div class="progress-bar" :style="{ width: trend.attendance + '%' }"></div>
+                                    </div>
+                                    <span class="small">{{ trend.attendance }}%</span>
+                                </div>
+                            </td>
+                            <td class="p-3">{{ trend.avgCourses }}과목</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 과목별 수강 현황 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">과목별 수강 현황</h5>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">과목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수강생</th>
+                            <th class="fw-semibold p-3 border-bottom-2">반 개수</th>
+                            <th class="fw-semibold p-3 border-bottom-2">출석률</th>
+                            <th class="fw-semibold p-3 border-bottom-2">만족도</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="subject in subjectStats" :key="subject.name">
+                            <td class="p-3">{{ subject.name }}</td>
+                            <td class="p-3">{{ subject.students }}명</td>
+                            <td class="p-3">{{ subject.classes }}개</td>
+                            <td class="p-3">{{ subject.attendance }}%</td>
+                            <td class="p-3">
+                                <span class="badge" :class="getSatisfactionBadgeClass(subject.satisfaction)">
+                                    {{ subject.satisfaction }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

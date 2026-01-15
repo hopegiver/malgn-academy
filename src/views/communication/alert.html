@@ -1,0 +1,245 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">학원 알림</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원 휴무일, 행사, 긴급 공지 등을 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showAlertModal(null)">
+                <i class="bi bi-bell-fill me-2"></i>알림 등록
+            </button>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 알림</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-bell-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">활성 알림</div>
+                        <div class="fw-bold fs-4">{{ stats.active }}건</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번주 알림</div>
+                        <div class="fw-bold fs-4">{{ stats.thisWeek }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-week-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">예약 알림</div>
+                        <div class="fw-bold fs-4">{{ stats.scheduled }}건</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">알림 유형</label>
+                    <select class="form-select" v-model="filters.type" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="holiday">휴무일</option>
+                        <option value="event">행사</option>
+                        <option value="urgent">긴급공지</option>
+                        <option value="schedule">일정변경</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select class="form-select" v-model="filters.status" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="active">활성</option>
+                        <option value="scheduled">예약</option>
+                        <option value="expired">만료</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">중요도</label>
+                    <select class="form-select" v-model="filters.priority" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="high">높음</option>
+                        <option value="normal">보통</option>
+                        <option value="low">낮음</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 목록 테이블 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">유형</th>
+                            <th class="fw-semibold p-3 border-bottom-2">제목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">내용</th>
+                            <th class="fw-semibold p-3 border-bottom-2">게시 기간</th>
+                            <th class="fw-semibold p-3 border-bottom-2">중요도</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="alert in filteredAlerts" :key="alert.id">
+                            <td class="p-3">{{ alert.id }}</td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getTypeBadgeClass(alert.type)">
+                                    {{ getTypeText(alert.type) }}
+                                </span>
+                            </td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ alert.title }}</div>
+                            </td>
+                            <td class="p-3">
+                                <div class="text-truncate" style="max-width: 250px;">
+                                    {{ alert.content }}
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                <div class="small">{{ alert.startDate }}</div>
+                                <div class="small text-muted">~ {{ alert.endDate }}</div>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getPriorityBadgeClass(alert.priority)">
+                                    {{ getPriorityText(alert.priority) }}
+                                </span>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getStatusBadgeClass(alert.status)">
+                                    {{ getStatusText(alert.status) }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="showAlertModal(alert)">
+                                    수정
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="deleteAlert(alert)">
+                                    삭제
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredAlerts.length === 0">
+                            <td colspan="8" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 등록/수정 모달 -->
+    <div class="modal fade" id="alertModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">{{ alertForm.id ? '알림 수정' : '알림 등록' }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">알림 유형</label>
+                        <select class="form-select" v-model="alertForm.type">
+                            <option value="holiday">휴무일</option>
+                            <option value="event">행사</option>
+                            <option value="urgent">긴급공지</option>
+                            <option value="schedule">일정변경</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">제목</label>
+                        <input type="text" class="form-control" v-model="alertForm.title" placeholder="알림 제목">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">내용</label>
+                        <textarea class="form-control" v-model="alertForm.content" rows="4" placeholder="알림 내용을 입력하세요"></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">게시 시작일</label>
+                            <input type="date" class="form-control" v-model="alertForm.startDate">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">게시 종료일</label>
+                            <input type="date" class="form-control" v-model="alertForm.endDate">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">중요도</label>
+                        <select class="form-select" v-model="alertForm.priority">
+                            <option value="high">높음</option>
+                            <option value="normal">보통</option>
+                            <option value="low">낮음</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" v-model="alertForm.sendNotification" id="sendNotification">
+                        <label class="form-check-label" for="sendNotification">
+                            알림 메시지 발송
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" v-model="alertForm.showOnHomepage" id="showOnHomepage">
+                        <label class="form-check-label" for="showOnHomepage">
+                            홈페이지에 표시
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click="saveAlert">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

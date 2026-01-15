@@ -1,0 +1,296 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">미수납 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">미납 학생을 조회하고 납부 독촉을 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="sendBulkReminder">
+                <i class="bi bi-send me-2"></i>일괄 독촉 발송
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">검색</label>
+                    <input type="text" class="form-control" placeholder="학생명 검색" v-model="searchKeyword" @input="handleSearch">
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold">학년</label>
+                    <select class="form-select" v-model="filters.grade" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="초등">초등</option>
+                        <option value="중1">중1</option>
+                        <option value="중2">중2</option>
+                        <option value="중3">중3</option>
+                        <option value="고1">고1</option>
+                        <option value="고2">고2</option>
+                        <option value="고3">고3</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold">미납 기간</label>
+                    <select class="form-select" v-model="filters.period" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="1month">1개월 이상</option>
+                        <option value="2months">2개월 이상</option>
+                        <option value="3months">3개월 이상</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold">미납 항목</label>
+                    <select class="form-select" v-model="filters.item" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="tuition">수강료</option>
+                        <option value="book">교재비</option>
+                        <option value="exam">시험비</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold">정렬</label>
+                    <select class="form-select" v-model="sortBy" @change="handleSort">
+                        <option value="amount">미납액 높은순</option>
+                        <option value="date">납부 예정일순</option>
+                        <option value="name">학생명순</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-1">
+                    <label class="form-label fw-semibold">&nbsp;</label>
+                    <button class="btn btn-outline-secondary w-100" @click="resetFilters">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">미수납 학생</div>
+                        <div class="fw-bold fs-4">{{ stats.unpaidStudents }}명</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">총 미수납액</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(stats.totalUnpaid) }}원</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">3개월 이상</div>
+                        <div class="fw-bold fs-4">{{ stats.longTermUnpaid }}명</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번 달 독촉</div>
+                        <div class="fw-bold fs-4">{{ stats.reminders }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-bell"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 미수납 목록 테이블 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3">
+                                <input type="checkbox" v-model="selectAll" @change="toggleSelectAll">
+                            </th>
+                            <th class="fw-semibold p-3">학생명</th>
+                            <th class="fw-semibold p-3">학년</th>
+                            <th class="fw-semibold p-3">미납 항목</th>
+                            <th class="fw-semibold p-3 text-end">미납액</th>
+                            <th class="fw-semibold p-3">납부 예정일</th>
+                            <th class="fw-semibold p-3 text-center">미납 기간</th>
+                            <th class="fw-semibold p-3">연락처</th>
+                            <th class="fw-semibold p-3">최근 독촉일</th>
+                            <th class="fw-semibold p-3 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="unpaid in filteredUnpaid" :key="unpaid.id">
+                            <td class="p-3">
+                                <input type="checkbox" v-model="unpaid.selected">
+                            </td>
+                            <td class="p-3">
+                                <a href="#" @click.prevent="viewStudent(unpaid.studentId)" class="text-decoration-none">
+                                    {{ unpaid.studentName }}
+                                </a>
+                            </td>
+                            <td class="p-3">{{ unpaid.grade }}</td>
+                            <td class="p-3">{{ unpaid.item }}</td>
+                            <td class="p-3 text-end fw-semibold text-danger">{{ formatCurrency(unpaid.amount) }}원</td>
+                            <td class="p-3">{{ unpaid.dueDate }}</td>
+                            <td class="p-3 text-center">
+                                <span class="badge" :class="getPeriodBadgeClass(unpaid.overdueDays)" style="font-size: 0.8rem;">
+                                    {{ unpaid.overdueDays }}일
+                                </span>
+                            </td>
+                            <td class="p-3">{{ unpaid.phone }}</td>
+                            <td class="p-3">
+                                <span class="text-muted" v-if="!unpaid.lastReminderDate">-</span>
+                                <span v-else>{{ unpaid.lastReminderDate }}</span>
+                            </td>
+                            <td class="p-3">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-primary" @click="sendReminder(unpaid)">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" @click="recordPayment(unpaid)">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" @click="viewHistory(unpaid)">
+                                        <i class="bi bi-clock-history"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredUnpaid.length === 0">
+                            <td colspan="10" class="p-4 text-center text-muted">
+                                미수납 내역이 없습니다.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수납 처리 모달 -->
+    <div class="modal" :class="{ 'show d-block': showPaymentModal }" v-if="showPaymentModal" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">수납 처리</h5>
+                    <button type="button" class="btn-close" @click="closePaymentModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="handlePaymentSubmit">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">학생명</label>
+                            <input type="text" class="form-control" :value="paymentData.studentName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">미납 항목</label>
+                            <input type="text" class="form-control" :value="paymentData.item" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">미납액</label>
+                            <input type="text" class="form-control" :value="formatCurrency(paymentData.amount) + '원'" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">납부 금액 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" v-model="paymentData.paidAmount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">결제수단 <span class="text-danger">*</span></label>
+                            <select class="form-select" v-model="paymentData.method" required>
+                                <option value="">선택하세요</option>
+                                <option value="card">카드</option>
+                                <option value="cash">현금</option>
+                                <option value="transfer">계좌이체</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">수납일 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" v-model="paymentData.paymentDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">메모</label>
+                            <textarea class="form-control" rows="3" v-model="paymentData.memo" placeholder="수납 관련 메모를 입력하세요"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="closePaymentModal">취소</button>
+                    <button type="button" class="btn btn-primary" @click="handlePaymentSubmit">수납 처리</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 독촉 내역 모달 -->
+    <div class="modal" :class="{ 'show d-block': showHistoryModal }" v-if="showHistoryModal" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">독촉 내역</h5>
+                    <button type="button" class="btn-close" @click="closeHistoryModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6 class="fw-semibold">{{ historyData.studentName }} ({{ historyData.grade }})</h6>
+                        <p class="text-muted mb-0">미납 항목: {{ historyData.item }}</p>
+                        <p class="text-danger fw-semibold">미납액: {{ formatCurrency(historyData.amount) }}원</p>
+                    </div>
+                    <hr>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="fw-semibold p-2">독촉일</th>
+                                    <th class="fw-semibold p-2">발송 방법</th>
+                                    <th class="fw-semibold p-2">담당자</th>
+                                    <th class="fw-semibold p-2">메모</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="history in historyData.reminders" :key="history.id">
+                                    <td class="p-2">{{ history.date }}</td>
+                                    <td class="p-2">{{ history.method }}</td>
+                                    <td class="p-2">{{ history.staff }}</td>
+                                    <td class="p-2">{{ history.memo }}</td>
+                                </tr>
+                                <tr v-if="historyData.reminders.length === 0">
+                                    <td colspan="4" class="p-3 text-center text-muted">독촉 내역이 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="closeHistoryModal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

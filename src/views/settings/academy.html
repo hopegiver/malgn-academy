@@ -1,0 +1,233 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">학원 정보</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원의 기본 정보를 설정합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="saveAcademyInfo">
+                <i class="bi bi-check-circle me-2"></i>저장
+            </button>
+        </div>
+    </div>
+
+    <!-- 기본 정보 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">기본 정보</h5>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">학원명</label>
+                    <input type="text" class="form-control" v-model="academyInfo.name" placeholder="학원명을 입력하세요">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">원장명</label>
+                    <input type="text" class="form-control" v-model="academyInfo.director" placeholder="원장명을 입력하세요">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">사업자등록번호</label>
+                    <input type="text" class="form-control" v-model="academyInfo.businessNumber" placeholder="000-00-00000">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">설립일</label>
+                    <input type="date" class="form-control" v-model="academyInfo.establishedDate">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 연락처 정보 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">연락처 정보</h5>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">대표 전화</label>
+                    <input type="tel" class="form-control" v-model="academyInfo.phone" placeholder="02-0000-0000">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">팩스</label>
+                    <input type="tel" class="form-control" v-model="academyInfo.fax" placeholder="02-0000-0000">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">이메일</label>
+                    <input type="email" class="form-control" v-model="academyInfo.email" placeholder="academy@example.com">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">웹사이트</label>
+                    <input type="url" class="form-control" v-model="academyInfo.website" placeholder="https://www.example.com">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주소 정보 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">주소 정보</h5>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">우편번호</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" v-model="academyInfo.zipCode" placeholder="00000" readonly>
+                        <button class="btn btn-outline-secondary" type="button" @click="searchAddress">
+                            주소검색
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">기본 주소</label>
+                    <input type="text" class="form-control" v-model="academyInfo.address" placeholder="주소를 입력하세요" readonly>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">상세 주소</label>
+                    <input type="text" class="form-control" v-model="academyInfo.addressDetail" placeholder="상세 주소를 입력하세요">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 운영 정보 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">운영 정보</h5>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">운영 시간</label>
+                    <div class="input-group">
+                        <input type="time" class="form-control" v-model="academyInfo.operatingHours.start">
+                        <span class="input-group-text">~</span>
+                        <input type="time" class="form-control" v-model="academyInfo.operatingHours.end">
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">휴무일</label>
+                    <select class="form-select" v-model="academyInfo.closedDays" multiple>
+                        <option value="monday">월요일</option>
+                        <option value="tuesday">화요일</option>
+                        <option value="wednesday">수요일</option>
+                        <option value="thursday">목요일</option>
+                        <option value="friday">금요일</option>
+                        <option value="saturday">토요일</option>
+                        <option value="sunday">일요일</option>
+                    </select>
+                    <small class="text-muted">Ctrl 키를 누른 채로 여러 날짜를 선택할 수 있습니다</small>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">최대 수용 인원</label>
+                    <input type="number" class="form-control" v-model="academyInfo.maxCapacity" placeholder="200">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">강의실 수</label>
+                    <input type="number" class="form-control" v-model="academyInfo.classrooms" placeholder="10">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 은행 정보 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">은행 정보</h5>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">은행명</label>
+                    <select class="form-select" v-model="academyInfo.bank.name">
+                        <option value="">은행 선택</option>
+                        <option value="KB국민은행">KB국민은행</option>
+                        <option value="신한은행">신한은행</option>
+                        <option value="하나은행">하나은행</option>
+                        <option value="우리은행">우리은행</option>
+                        <option value="NH농협은행">NH농협은행</option>
+                        <option value="IBK기업은행">IBK기업은행</option>
+                        <option value="카카오뱅크">카카오뱅크</option>
+                        <option value="토스뱅크">토스뱅크</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">계좌번호</label>
+                    <input type="text" class="form-control" v-model="academyInfo.bank.accountNumber" placeholder="0000-0000-0000">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">예금주</label>
+                    <input type="text" class="form-control" v-model="academyInfo.bank.accountHolder" placeholder="예금주명">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 소개 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">학원 소개</h5>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">학원 소개</label>
+                <textarea class="form-control" v-model="academyInfo.description" rows="6" placeholder="학원 소개 내용을 입력하세요"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">주요 특징</label>
+                <textarea class="form-control" v-model="academyInfo.features" rows="4" placeholder="학원의 주요 특징을 입력하세요"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- SNS 정보 -->
+    <div class="card border rounded-3">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">SNS 정보</h5>
+
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-facebook text-primary me-2"></i>페이스북
+                    </label>
+                    <input type="url" class="form-control" v-model="academyInfo.sns.facebook" placeholder="https://facebook.com/...">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-instagram text-danger me-2"></i>인스타그램
+                    </label>
+                    <input type="url" class="form-control" v-model="academyInfo.sns.instagram" placeholder="https://instagram.com/...">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-youtube text-danger me-2"></i>유튜브
+                    </label>
+                    <input type="url" class="form-control" v-model="academyInfo.sns.youtube" placeholder="https://youtube.com/...">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold">
+                        <i class="bi bi-twitter text-info me-2"></i>블로그
+                    </label>
+                    <input type="url" class="form-control" v-model="academyInfo.sns.blog" placeholder="https://blog.naver.com/...">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

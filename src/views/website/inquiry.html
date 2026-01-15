@@ -1,0 +1,270 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">문의 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">웹사이트를 통해 접수된 문의를 관리하고 답변합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showAnswerModal(null)">
+                <i class="bi bi-plus-circle me-2"></i>직접 답변
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">검색</label>
+                    <input type="text" class="form-control" v-model="searchKeyword" @input="handleSearch" placeholder="이름, 이메일, 내용으로 검색">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">문의 유형</label>
+                    <select class="form-select" v-model="filters.type" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="course">수강 문의</option>
+                        <option value="schedule">시간표 문의</option>
+                        <option value="tuition">수강료 문의</option>
+                        <option value="etc">기타 문의</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">답변 상태</label>
+                    <select class="form-select" v-model="filters.status" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="pending">미답변</option>
+                        <option value="answered">답변완료</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 문의</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-chat-dots-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">미답변</div>
+                        <div class="fw-bold fs-4">{{ stats.pending }}건</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">답변완료</div>
+                        <div class="fw-bold fs-4">{{ stats.answered }}건</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번주 문의</div>
+                        <div class="fw-bold fs-4">{{ stats.thisWeek }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-week-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 문의 목록 테이블 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">문의 유형</th>
+                            <th class="fw-semibold p-3 border-bottom-2">문의자</th>
+                            <th class="fw-semibold p-3 border-bottom-2">연락처</th>
+                            <th class="fw-semibold p-3 border-bottom-2">문의 내용</th>
+                            <th class="fw-semibold p-3 border-bottom-2">접수일</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="inquiry in filteredInquiries" :key="inquiry.id">
+                            <td class="p-3">{{ inquiry.id }}</td>
+                            <td class="p-3">
+                                <span class="badge bg-secondary" style="font-size: 0.8rem;">
+                                    {{ getTypeText(inquiry.type) }}
+                                </span>
+                            </td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ inquiry.name }}</div>
+                                <div class="text-muted small">{{ inquiry.email }}</div>
+                            </td>
+                            <td class="p-3">{{ inquiry.phone }}</td>
+                            <td class="p-3">
+                                <div class="text-truncate" style="max-width: 250px;">
+                                    {{ inquiry.content }}
+                                </div>
+                            </td>
+                            <td class="p-3">{{ inquiry.createdAt }}</td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getStatusBadgeClass(inquiry.status)">
+                                    {{ getStatusText(inquiry.status) }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewInquiry(inquiry)">
+                                    상세
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" @click="showAnswerModal(inquiry)" v-if="inquiry.status === 'pending'">
+                                    답변
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredInquiries.length === 0">
+                            <td colspan="8" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 답변 모달 -->
+    <div class="modal fade" id="answerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">문의 답변</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="selectedInquiry">
+                        <!-- 문의 내용 -->
+                        <div class="mb-4 p-3 bg-light rounded-3">
+                            <div class="mb-2">
+                                <span class="fw-semibold">문의자:</span>
+                                <span class="ms-2">{{ selectedInquiry.name }} ({{ selectedInquiry.phone }})</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="fw-semibold">이메일:</span>
+                                <span class="ms-2">{{ selectedInquiry.email }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="fw-semibold">문의 유형:</span>
+                                <span class="ms-2">{{ getTypeText(selectedInquiry.type) }}</span>
+                            </div>
+                            <div>
+                                <span class="fw-semibold">문의 내용:</span>
+                                <div class="mt-2">{{ selectedInquiry.content }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 답변 폼 -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">답변 내용</label>
+                        <textarea class="form-control" v-model="answerForm.content" rows="6" placeholder="답변 내용을 입력하세요"></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" v-model="answerForm.sendEmail" id="sendEmail">
+                        <label class="form-check-label" for="sendEmail">
+                            이메일로 답변 발송
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click="submitAnswer">답변 등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 모달 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">문의 상세</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="selectedInquiry">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">문의 번호</label>
+                            <div>{{ selectedInquiry.id }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">문의 유형</label>
+                            <div>{{ getTypeText(selectedInquiry.type) }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">문의자</label>
+                            <div>{{ selectedInquiry.name }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">연락처</label>
+                            <div>{{ selectedInquiry.phone }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">이메일</label>
+                            <div>{{ selectedInquiry.email }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">문의 내용</label>
+                            <div class="p-3 bg-light rounded-3">{{ selectedInquiry.content }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">접수일</label>
+                            <div>{{ selectedInquiry.createdAt }}</div>
+                        </div>
+                        <div class="mb-3" v-if="selectedInquiry.answer">
+                            <label class="form-label fw-semibold">답변 내용</label>
+                            <div class="p-3 bg-success bg-opacity-10 rounded-3">{{ selectedInquiry.answer }}</div>
+                        </div>
+                        <div class="mb-3" v-if="selectedInquiry.answeredAt">
+                            <label class="form-label fw-semibold">답변일</label>
+                            <div>{{ selectedInquiry.answeredAt }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" @click="showAnswerModal(selectedInquiry)" v-if="selectedInquiry && selectedInquiry.status === 'pending'">답변 작성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

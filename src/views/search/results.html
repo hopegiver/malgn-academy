@@ -1,0 +1,119 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">검색 결과</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">
+                    '<span class="fw-semibold">{{ searchQuery }}</span>' 검색 결과 {{ totalResults }}건
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 검색 결과가 없을 때 -->
+    <div v-if="totalResults === 0" class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-search" style="font-size: 4rem; color: #dee2e6;"></i>
+        </div>
+        <h4 class="text-muted mb-3">검색 결과가 없습니다</h4>
+        <p class="text-secondary">다른 검색어로 다시 시도해보세요.</p>
+    </div>
+
+    <!-- 메뉴 검색 결과 -->
+    <div v-if="menuResults.length > 0" class="mb-4">
+        <div class="card border rounded-3">
+            <div class="card-header bg-light border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-menu-button-wide text-primary"></i>
+                    <h5 class="mb-0 fw-semibold">메뉴 ({{ menuResults.length }}건)</h5>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a v-for="(result, index) in menuResults"
+                       :key="index"
+                       :href="'#/' + result.path"
+                       class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center"
+                                 style="width: 40px; height: 40px;">
+                                <i :class="'bi ' + result.icon"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold mb-1" v-html="highlightText(result.label)"></div>
+                                <div class="text-muted small">
+                                    <span class="badge bg-secondary me-2">{{ result.section }}</span>
+                                    <code class="text-muted">{{ result.path }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 매뉴얼 검색 결과 (향후 구현) -->
+    <div v-if="manualResults.length > 0" class="mb-4">
+        <div class="card border rounded-3">
+            <div class="card-header bg-light border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-book text-success"></i>
+                    <h5 class="mb-0 fw-semibold">매뉴얼 ({{ manualResults.length }}건)</h5>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a v-for="(result, index) in manualResults"
+                       :key="index"
+                       href="#"
+                       class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3">
+                        <div>
+                            <div class="fw-semibold mb-1">{{ result.title }}</div>
+                            <div class="text-muted small">{{ result.description }}</div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 도움말 (향후 구현) -->
+    <div v-if="aiSuggestions.length > 0" class="mb-4">
+        <div class="card border rounded-3 border-primary" style="background-color: #f8f9ff;">
+            <div class="card-header bg-primary bg-opacity-10 border-bottom border-primary">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-robot text-primary"></i>
+                    <h5 class="mb-0 fw-semibold text-primary">AI 도움말</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div v-for="(suggestion, index) in aiSuggestions" :key="index" class="mb-3">
+                    <p class="mb-2">{{ suggestion.text }}</p>
+                    <div class="d-flex gap-2">
+                        <button v-for="(action, idx) in suggestion.actions"
+                                :key="idx"
+                                class="btn btn-sm btn-outline-primary">
+                            {{ action.label }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 검색 팁 -->
+    <div class="card border rounded-3 bg-light">
+        <div class="card-body p-4">
+            <h6 class="fw-semibold mb-3">검색 팁</h6>
+            <ul class="mb-0 text-muted small">
+                <li class="mb-2">메뉴명이나 기능명으로 검색해보세요 (예: "학생", "수납", "출결")</li>
+                <li class="mb-2">띄어쓰기 없이 검색하면 더 많은 결과를 찾을 수 있습니다</li>
+                <li>향후 AI 기능이 추가되면 자연어 검색도 가능합니다</li>
+            </ul>
+        </div>
+    </div>
+</div>

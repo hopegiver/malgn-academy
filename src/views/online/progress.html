@@ -1,0 +1,233 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">학습 현황</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학생들의 온라인 강의 학습 진행 상황을 확인합니다</p>
+            </div>
+            <button class="btn btn-success" @click="exportExcel">
+                <i class="bi bi-file-earmark-excel me-2"></i>엑셀 다운로드
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">학생명 검색</label>
+                    <input type="text" class="form-control" placeholder="학생명 검색" v-model="searchKeyword">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">강의명</label>
+                    <select class="form-select" v-model="filterLecture">
+                        <option value="">전체 강의</option>
+                        <option value="중등 수학 기초 완성">중등 수학 기초 완성</option>
+                        <option value="고등 영문법 정복">고등 영문법 정복</option>
+                        <option value="물리학 입문">물리학 입문</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">진도율</label>
+                    <select class="form-select" v-model="filterProgress">
+                        <option value="">전체 진도율</option>
+                        <option value="high">80% 이상</option>
+                        <option value="medium">50~79%</option>
+                        <option value="low">50% 미만</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">평균 진도율</div>
+                        <div class="fw-bold fs-4">{{ stats.avgProgress }}%</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">평균 학습시간</div>
+                        <div class="fw-bold fs-4">{{ stats.avgStudyTime }}시간</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">완강률</div>
+                        <div class="fw-bold fs-4">{{ stats.completionRate }}%</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">활발한 학습자</div>
+                        <div class="fw-bold fs-4">{{ stats.activeStudents }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 학습 현황 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 60px;">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">학생명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">강의명</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center" style="width: 120px;">학습시간</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center" style="width: 100px;">완료강의</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 150px;">진도율</th>
+                            <th class="fw-semibold p-3 border-bottom-2" style="width: 120px;">최근 접속</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center" style="width: 80px;">상세</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, index) in filteredProgress" :key="item.id">
+                            <td class="p-3">{{ progressList.length - index }}</td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ item.studentName }}</div>
+                                <div class="text-muted small">{{ item.studentGrade }}</div>
+                            </td>
+                            <td class="p-3">{{ item.lectureName }}</td>
+                            <td class="p-3 text-center">{{ item.studyTime }}시간</td>
+                            <td class="p-3 text-center">{{ item.completedLessons }}/{{ item.totalLessons }}</td>
+                            <td class="p-3">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" :style="{ width: item.progress + '%' }"
+                                         :class="{
+                                             'bg-success': item.progress >= 80,
+                                             'bg-primary': item.progress >= 50 && item.progress < 80,
+                                             'bg-warning': item.progress < 50
+                                         }">
+                                        {{ item.progress }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-3">{{ item.lastAccess }}</td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary" @click="viewDetail(item)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 학습 현황 모달 -->
+    <div class="modal fade" :class="{ show: showDetailModal, 'd-block': showDetailModal }" tabindex="-1" v-if="showDetailModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">상세 학습 현황</h5>
+                    <button type="button" class="btn-close" @click="showDetailModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">학생명</label>
+                            <div>{{ selectedItem.studentName }} ({{ selectedItem.studentGrade }})</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">강의명</label>
+                            <div>{{ selectedItem.lectureName }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">진도율</label>
+                            <div class="h5 mb-0">{{ selectedItem.progress }}%</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">학습시간</label>
+                            <div class="h5 mb-0">{{ selectedItem.studyTime }}시간</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">완료강의</label>
+                            <div class="h5 mb-0">{{ selectedItem.completedLessons }}/{{ selectedItem.totalLessons }}</div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">강의별 학습 현황</h6>
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">1강. 강의 소개</div>
+                                <small class="text-muted">학습시간: 25분</small>
+                            </div>
+                            <span class="badge bg-success">완료</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">2강. 기본 개념 이해</div>
+                                <small class="text-muted">학습시간: 45분</small>
+                            </div>
+                            <span class="badge bg-success">완료</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">3강. 실습 문제 풀이</div>
+                                <small class="text-muted">학습시간: 18분 (진행중)</small>
+                            </div>
+                            <span class="badge bg-primary">학습중 (60%)</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">4강. 심화 학습</div>
+                                <small class="text-muted">학습시간: 0분</small>
+                            </div>
+                            <span class="badge bg-secondary">미학습</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">5강. 종합 정리</div>
+                                <small class="text-muted">학습시간: 0분</small>
+                            </div>
+                            <span class="badge bg-secondary">미학습</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showDetailModal = false">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showDetailModal }" v-if="showDetailModal"></div>
+</div>

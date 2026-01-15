@@ -1,0 +1,243 @@
+<div class="dashboard w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <h1 class="fw-bold mb-2" style="font-size: 1.75rem;">대시보드</h1>
+        <div class="d-flex gap-2 text-secondary" style="font-size: 0.875rem;">
+            <i class="bi bi-house-door"></i>
+            <span>/</span>
+            <span>대시보드</span>
+        </div>
+    </div>
+
+    <!-- 오늘의 현황 (4개 카드) -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="text-secondary fw-medium" style="font-size: 0.875rem;">오늘 출석률</div>
+                        <div class="fw-bold mb-1" style="font-size: 2rem;">{{ todayStats.attendanceRate }}%</div>
+                        <div class="fw-semibold" style="font-size: 0.75rem; color: var(--success-color);">
+                            <i class="bi bi-arrow-up"></i> 전일 대비 {{ todayStats.attendanceChange }}%
+                        </div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center fs-4">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="text-secondary fw-medium" style="font-size: 0.875rem;">오늘 수업</div>
+                        <div class="fw-bold mb-1" style="font-size: 2rem;">{{ todayStats.todayClasses }}건</div>
+                        <div class="text-muted small">진행 중: {{ todayStats.ongoingClasses }}건</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center fs-4">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="text-secondary fw-medium" style="font-size: 0.875rem;">이번주 미수납</div>
+                        <div class="fw-bold mb-1" style="font-size: 2rem;">{{ todayStats.unpaidCount }}명</div>
+                        <div class="fw-semibold" style="font-size: 0.75rem; color: var(--danger-color);">
+                            <i class="bi bi-arrow-down"></i> 미납액: {{ formatCurrency(todayStats.unpaidAmount) }}
+                        </div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center fs-4">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="text-secondary fw-medium" style="font-size: 0.875rem;">상담 예약</div>
+                        <div class="fw-bold mb-1" style="font-size: 2rem;">{{ todayStats.consultations }}건</div>
+                        <div class="text-muted small">오늘: {{ todayStats.todayConsultations }}건</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center fs-4">
+                        <i class="bi bi-chat-dots-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 빠른 메뉴 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="quick-menu rounded-3 p-4">
+                <h5 class="mb-3">빠른 메뉴</h5>
+                <div class="quick-menu-grid">
+                    <a href="#/students/register" class="quick-menu-item d-flex flex-column align-items-center gap-3 p-4 rounded-3 text-decoration-none">
+                        <i class="bi bi-person-plus-fill fs-1"></i>
+                        <span class="fw-semibold" style="font-size: 0.875rem;">학생 등록</span>
+                    </a>
+                    <a href="#/classes/enroll" class="quick-menu-item d-flex flex-column align-items-center gap-3 p-4 rounded-3 text-decoration-none">
+                        <i class="bi bi-person-add fs-1"></i>
+                        <span class="fw-semibold" style="font-size: 0.875rem;">수강 신청</span>
+                    </a>
+                    <a href="#/payments/process" class="quick-menu-item d-flex flex-column align-items-center gap-3 p-4 rounded-3 text-decoration-none">
+                        <i class="bi bi-credit-card fs-1"></i>
+                        <span class="fw-semibold" style="font-size: 0.875rem;">수납 처리</span>
+                    </a>
+                    <a href="#/attendance/input" class="quick-menu-item d-flex flex-column align-items-center gap-3 p-4 rounded-3 text-decoration-none">
+                        <i class="bi bi-check2-square fs-1"></i>
+                        <span class="fw-semibold" style="font-size: 0.875rem;">출결 입력</span>
+                    </a>
+                    <a href="#/communication/message" class="quick-menu-item d-flex flex-column align-items-center gap-3 p-4 rounded-3 text-decoration-none">
+                        <i class="bi bi-envelope fs-1"></i>
+                        <span class="fw-semibold" style="font-size: 0.875rem;">SMS 발송</span>
+                    </a>
+                    <a href="#/communication/notice" class="quick-menu-item d-flex flex-column align-items-center gap-3 p-4 rounded-3 text-decoration-none">
+                        <i class="bi bi-megaphone fs-1"></i>
+                        <span class="fw-semibold" style="font-size: 0.875rem;">공지사항</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 핵심 통계 그래프 -->
+    <div class="row g-3">
+        <!-- 재원생 추이 -->
+        <div class="col-12 col-lg-8">
+            <div class="chart-container rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-semibold mb-0" style="font-size: 1.125rem;">재원생 추이 (최근 6개월)</h5>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary active">6개월</button>
+                        <button type="button" class="btn btn-outline-secondary">1년</button>
+                    </div>
+                </div>
+                <div class="py-3">
+                    <div class="chart-bars px-3">
+                        <div class="chart-bar d-flex flex-column align-items-center gap-2" v-for="(data, index) in studentsData" :key="index">
+                            <div class="bar-fill d-flex align-items-start justify-content-center pt-2" :style="{ height: data.percentage + '%' }">
+                                <span class="text-white fw-semibold" style="font-size: 0.875rem;">{{ data.value }}</span>
+                            </div>
+                            <div class="text-secondary fw-medium" style="font-size: 0.875rem;">{{ data.label }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 이번달 신규/퇴원 -->
+        <div class="col-12 col-lg-4">
+            <div class="chart-container rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-semibold mb-0" style="font-size: 1.125rem;">이번달 신규/퇴원</h5>
+                </div>
+                <div class="p-3">
+                    <div class="simple-stat-item d-flex align-items-center gap-3 p-3 rounded-3 mb-3">
+                        <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center fs-4">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <div>
+                            <div class="text-secondary fw-medium" style="font-size: 0.875rem;">신규 등록</div>
+                            <div class="fw-bold" style="font-size: 2rem;">{{ newStudentsData.new }}명</div>
+                        </div>
+                    </div>
+                    <div class="simple-stat-item d-flex align-items-center gap-3 p-3 rounded-3 mb-0">
+                        <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center fs-4">
+                            <i class="bi bi-person-dash-fill"></i>
+                        </div>
+                        <div>
+                            <div class="text-secondary fw-medium" style="font-size: 0.875rem;">퇴원</div>
+                            <div class="fw-bold" style="font-size: 2rem;">{{ newStudentsData.leave }}명</div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="progress rounded-3" style="height: 30px;">
+                            <div class="progress-bar bg-success d-flex align-items-center justify-content-center fw-semibold" style="font-size: 0.813rem;" :style="{ width: newStudentsData.newPercentage + '%' }">
+                                신규 {{ newStudentsData.new }}명
+                            </div>
+                            <div class="progress-bar bg-danger d-flex align-items-center justify-content-center fw-semibold" style="font-size: 0.813rem;" :style="{ width: newStudentsData.leavePercentage + '%' }">
+                                퇴원 {{ newStudentsData.leave }}명
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 월별 매출 현황 -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-container rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-semibold mb-0" style="font-size: 1.125rem;">월별 매출 현황</h5>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>2024년</option>
+                        <option>2023년</option>
+                    </select>
+                </div>
+                <div class="py-3">
+                    <div class="chart-bars horizontal">
+                        <div class="d-flex align-items-center gap-3 mb-3" v-for="(data, index) in revenueData" :key="index">
+                            <div class="text-secondary fw-medium" style="min-width: 40px; font-size: 0.875rem;">{{ data.label }}</div>
+                            <div class="bar-track flex-grow-1">
+                                <div class="bar-fill-h d-flex align-items-center px-3" :style="{ width: data.percentage + '%' }">
+                                    <span class="text-white fw-semibold" style="font-size: 0.813rem;">{{ data.value }}백만</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 수강 만료 예정 -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-container rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-semibold mb-0" style="font-size: 1.125rem;">수강 만료 예정</h5>
+                    <a href="#/students/list" class="text-decoration-none small">
+                        전체보기 <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="fw-semibold border-bottom-2">학생명</th>
+                                <th class="fw-semibold border-bottom-2">수업</th>
+                                <th class="fw-semibold border-bottom-2">만료일</th>
+                                <th class="fw-semibold border-bottom-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="student in expiringStudents" :key="student.id">
+                                <td>{{ student.name }}</td>
+                                <td><small>{{ student.class }}</small></td>
+                                <td>
+                                    <span class="badge" :class="getDaysLeftBadgeClass(student.daysLeft)">
+                                        {{ student.daysLeft }}일 남음
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" @click="extendClass(student)">
+                                        연장
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

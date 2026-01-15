@@ -1,0 +1,274 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">직원 목록</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원 직원을 조회하고 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showStaffForm(null)">
+                <i class="bi bi-person-plus me-2"></i>직원 등록
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold">검색</label>
+                    <input type="text" class="form-control" placeholder="이름 또는 연락처 검색" v-model="searchKeyword">
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">직급</label>
+                    <select class="form-select" v-model="filters.position">
+                        <option value="">전체</option>
+                        <option value="teacher">강사</option>
+                        <option value="admin">관리자</option>
+                        <option value="staff">직원</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold">상태</label>
+                    <select class="form-select" v-model="filters.status">
+                        <option value="">전체</option>
+                        <option value="active">재직중</option>
+                        <option value="inactive">퇴사</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold">&nbsp;</label>
+                    <button class="btn btn-outline-secondary w-100" @click="resetFilters">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">총 직원</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">강사</div>
+                        <div class="fw-bold fs-4">{{ stats.teachers }}명</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">관리자</div>
+                        <div class="fw-bold fs-4">{{ stats.admins }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">직원</div>
+                        <div class="fw-bold fs-4">{{ stats.staff }}명</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 직원 목록 테이블 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3">이름</th>
+                            <th class="fw-semibold p-3">아이디</th>
+                            <th class="fw-semibold p-3">직급</th>
+                            <th class="fw-semibold p-3">연락처</th>
+                            <th class="fw-semibold p-3">담당 과목</th>
+                            <th class="fw-semibold p-3">입사일</th>
+                            <th class="fw-semibold p-3">마지막 로그인</th>
+                            <th class="fw-semibold p-3 text-center">상태</th>
+                            <th class="fw-semibold p-3 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="staff in filteredStaff" :key="staff.id">
+                            <td class="p-3 fw-semibold">{{ staff.name }}</td>
+                            <td class="p-3">{{ staff.username }}</td>
+                            <td class="p-3">
+                                <span class="badge" :class="getPositionBadgeClass(staff.position)" style="font-size: 0.8rem;">
+                                    {{ getPositionText(staff.position) }}
+                                </span>
+                            </td>
+                            <td class="p-3">{{ staff.phone }}</td>
+                            <td class="p-3">{{ staff.subject || '-' }}</td>
+                            <td class="p-3">{{ staff.hireDate }}</td>
+                            <td class="p-3">{{ staff.lastLogin }}</td>
+                            <td class="p-3 text-center">
+                                <span class="badge" :class="staff.status === 'active' ? 'bg-success' : 'bg-secondary'" style="font-size: 0.8rem;">
+                                    {{ staff.status === 'active' ? '재직중' : '퇴사' }}
+                                </span>
+                            </td>
+                            <td class="p-3">
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-primary" @click="showStaffForm(staff)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" @click="openPermissions(staff)">
+                                        <i class="bi bi-shield-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @click="deleteStaff(staff)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 직원 등록/수정 모달 -->
+    <div class="modal fade" :class="{ show: showStaffModal, 'd-block': showStaffModal }" tabindex="-1" v-if="showStaffModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ staffForm.id ? '직원 정보 수정' : '직원 등록' }}</h5>
+                    <button type="button" class="btn-close" @click="showStaffModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">이름 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="staffForm.name" placeholder="이름 입력">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">직급 <span class="text-danger">*</span></label>
+                            <select class="form-select" v-model="staffForm.position">
+                                <option value="teacher">강사</option>
+                                <option value="admin">관리자</option>
+                                <option value="staff">직원</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">아이디 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="staffForm.username" placeholder="아이디 입력" :disabled="staffForm.id">
+                        </div>
+                        <div class="col-md-6" v-if="staffForm.position === 'teacher'">
+                            <label class="form-label fw-semibold">담당 과목</label>
+                            <input type="text" class="form-control" v-model="staffForm.subject" placeholder="담당 과목 입력">
+                        </div>
+                        <div class="col-md-6" v-if="!staffForm.id">
+                            <label class="form-label fw-semibold">비밀번호 <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" v-model="staffForm.password" placeholder="비밀번호 입력">
+                        </div>
+                        <div class="col-md-6" v-if="!staffForm.id">
+                            <label class="form-label fw-semibold">비밀번호 확인 <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" v-model="staffForm.passwordConfirm" placeholder="비밀번호 재입력">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">연락처 <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" v-model="staffForm.phone" placeholder="010-0000-0000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">이메일 <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" v-model="staffForm.email" placeholder="example@email.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">입사일 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" v-model="staffForm.hireDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">재직 상태</label>
+                            <select class="form-select" v-model="staffForm.status">
+                                <option value="active">재직중</option>
+                                <option value="inactive">퇴사</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showStaffModal = false">취소</button>
+                    <button type="button" class="btn btn-primary" @click="saveStaff">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showStaffModal }" v-if="showStaffModal"></div>
+
+    <!-- 권한 설정 모달 -->
+    <div class="modal fade" :class="{ show: showPermissionModal, 'd-block': showPermissionModal }" tabindex="-1" v-if="showPermissionModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">권한 설정 - {{ selectedStaff ? selectedStaff.name : '' }}</h5>
+                    <button type="button" class="btn-close" @click="showPermissionModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" v-model="permissionForm.students" id="perm-students">
+                            <label class="form-check-label" for="perm-students">학생 관리</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" v-model="permissionForm.courses" id="perm-courses">
+                            <label class="form-check-label" for="perm-courses">수업 관리</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" v-model="permissionForm.payment" id="perm-payment">
+                            <label class="form-check-label" for="perm-payment">수납 관리</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance" id="perm-attendance">
+                            <label class="form-check-label" for="perm-attendance">출결 관리</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" v-model="permissionForm.grades" id="perm-grades">
+                            <label class="form-check-label" for="perm-grades">성적 관리</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" v-model="permissionForm.reports" id="perm-reports">
+                            <label class="form-check-label" for="perm-reports">통계/보고서</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showPermissionModal = false">취소</button>
+                    <button type="button" class="btn btn-primary" @click="savePermissions">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showPermissionModal }" v-if="showPermissionModal"></div>
+</div>

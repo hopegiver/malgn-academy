@@ -1,0 +1,239 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">수업 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학원의 수업을 개설하고 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showAddModal">
+                <i class="bi bi-plus-circle me-2"></i>수업 개설
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">검색</label>
+                    <input type="text" class="form-control" v-model="searchKeyword" @input="handleSearch" placeholder="수업명, 강사명으로 검색">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">과목</label>
+                    <select class="form-select" v-model="filters.subject" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="math">수학</option>
+                        <option value="english">영어</option>
+                        <option value="science">과학</option>
+                        <option value="korean">국어</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select class="form-select" v-model="filters.status" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="active">진행중</option>
+                        <option value="scheduled">예정</option>
+                        <option value="completed">종료</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 수업</div>
+                        <div class="fw-bold fs-4">{{ stats.total }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">진행중</div>
+                        <div class="fw-bold fs-4">{{ stats.active }}개</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-play-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">예정</div>
+                        <div class="fw-bold fs-4">{{ stats.scheduled }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">총 수강생</div>
+                        <div class="fw-bold fs-4">{{ stats.totalStudents }}명</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수업 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">수업명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">과목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">강사</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수업시간</th>
+                            <th class="fw-semibold p-3 border-bottom-2">수강생</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="cls in filteredClasses" :key="cls.id">
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ cls.name }}</div>
+                                <div class="text-muted small">{{ cls.level }}</div>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" :class="getSubjectBadgeClass(cls.subject)">
+                                    {{ getSubjectText(cls.subject) }}
+                                </span>
+                            </td>
+                            <td class="p-3">{{ cls.teacher }}</td>
+                            <td class="p-3">
+                                <div>{{ cls.schedule }}</div>
+                                <div class="text-muted small">{{ cls.time }}</div>
+                            </td>
+                            <td class="p-3">
+                                <span class="fw-semibold">{{ cls.currentStudents }}/{{ cls.maxStudents }}명</span>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" :class="getStatusBadgeClass(cls.status)">
+                                    {{ getStatusText(cls.status) }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewDetail(cls)">
+                                    상세
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" @click="editClass(cls)">
+                                    수정
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredClasses.length === 0">
+                            <td colspan="7" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: 수업 개설 -->
+    <div class="modal fade" :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }" tabindex="-1" @click.self="closeModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">수업 개설</h5>
+                    <button type="button" class="btn-close" @click="closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="handleSubmit">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수업명 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" v-model="modalData.name" required placeholder="수업명 입력">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">과목 <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="modalData.subject" required>
+                                    <option value="">선택</option>
+                                    <option value="math">수학</option>
+                                    <option value="english">영어</option>
+                                    <option value="science">과학</option>
+                                    <option value="korean">국어</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">강사 <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="modalData.teacherId" required>
+                                    <option value="">선택</option>
+                                    <option value="1">박선생</option>
+                                    <option value="2">이선생</option>
+                                    <option value="3">최선생</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수준 <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="modalData.level" required>
+                                    <option value="">선택</option>
+                                    <option value="basic">기초반</option>
+                                    <option value="intermediate">중급반</option>
+                                    <option value="advanced">심화반</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수업 요일 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" v-model="modalData.schedule" required placeholder="예) 월/수/금">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수업 시간 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" v-model="modalData.time" required placeholder="예) 18:00-20:00">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">정원 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" v-model="modalData.maxStudents" required placeholder="최대 인원">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수강료 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" v-model="modalData.fee" required placeholder="월 수강료">
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" @click="closeModal">취소</button>
+                            <button type="submit" class="btn btn-primary">개설</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }" v-if="showModal"></div>
+</div>

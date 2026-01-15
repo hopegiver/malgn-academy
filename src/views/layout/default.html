@@ -1,0 +1,158 @@
+<div class="layout-wrapper">
+    <!-- 상단 헤더 (GNB) -->
+    <header class="app-header d-flex align-items-center px-4">
+        <!-- 좌측: 로고 & 사이드바 토글 -->
+        <div class="d-flex align-items-center gap-2" style="flex: 1;">
+            <button class="sidebar-toggle p-2 fs-4 text-secondary" @click="toggleSidebar">
+                <i class="bi" :class="toggleIconClass"></i>
+            </button>
+            <a href="#/home" class="header-logo text-decoration-none fw-semibold d-flex align-items-center gap-2">
+                <span>아발론 영어학원</span>
+            </a>
+        </div>
+
+        <!-- 중앙: AI 검색 -->
+        <div class="header-search d-flex justify-content-center align-items-center" style="flex: 1.5; max-width: 800px;">
+            <div class="position-relative w-100" style="max-width: 500px;">
+                <i class="bi bi-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 1rem;"></i>
+                <input type="text"
+                       class="form-control ps-5 pe-3"
+                       placeholder="메뉴 및 매뉴얼 검색 (AI 지원 예정)"
+                       v-model="searchQuery"
+                       @keyup.enter="handleSearch"
+                       style="border-radius: 20px; background-color: #f8f9fa; border: 1px solid #e9ecef;">
+            </div>
+        </div>
+
+        <!-- 우측: 알림 & 사용자 정보 -->
+        <div class="d-flex align-items-center gap-3 justify-content-end" style="flex: 1;">
+            <!-- 알림 센터 -->
+            <div class="position-relative">
+                <button class="notification-bell p-2 fs-4 text-secondary" @click="toggleNotifications">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-badge rounded-pill text-white fw-semibold text-center" v-if="unreadCount > 0">{{ unreadCount }}</span>
+                </button>
+
+                <!-- 알림 드롭다운 -->
+                <div class="notification-dropdown rounded-3" :class="{ show: showNotifications }">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <span class="fw-semibold">알림</span>
+                        <button class="btn btn-sm btn-link text-primary" @click="markAllAsRead">
+                            <small>모두 읽음</small>
+                        </button>
+                    </div>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <div class="notification-item p-3 border-bottom"
+                             v-for="(notif, index) in notifications"
+                             :key="index"
+                             :class="{ unread: !notif.read }"
+                             @click="handleNotificationClick(notif)">
+                            <div class="d-flex align-items-start gap-3">
+                                <div :class="'stat-icon rounded-3 d-flex align-items-center justify-content-center fs-4 ' + notif.type">
+                                    <i :class="'bi ' + notif.icon"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold mb-1">{{ notif.title }}</div>
+                                    <div class="text-muted small">{{ notif.message }}</div>
+                                    <div class="text-muted small mt-1">{{ notif.time }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="notifications.length === 0" class="p-4 text-center text-muted">
+                            알림이 없습니다
+                        </div>
+                    </div>
+                    <div class="p-2 text-center border-top">
+                        <a href="#/notifications" class="text-decoration-none">
+                            <small>모든 알림 보기</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사용자 메뉴 -->
+            <div class="user-menu d-flex align-items-center gap-3 p-2 px-3 rounded-3" data-bs-toggle="dropdown">
+                <div class="user-avatar rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold">{{ userInitial }}</div>
+                <div class="d-flex flex-column">
+                    <div class="fw-semibold" style="font-size: 0.875rem;">{{ userName }}</div>
+                    <div class="text-secondary" style="font-size: 0.75rem;">{{ userRole }}</div>
+                </div>
+                <i class="bi bi-chevron-down text-muted small"></i>
+
+                <!-- 드롭다운 메뉴 -->
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#/profile"><i class="bi bi-person me-2"></i> 내 정보</a></li>
+                    <li><a class="dropdown-item" href="#/settings/academy"><i class="bi bi-gear me-2"></i> 환경설정</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" @click="handleLogout"><i class="bi bi-box-arrow-right me-2"></i> 로그아웃</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- 좌측 사이드바 (LNB) -->
+    <aside class="app-sidebar" :class="{ collapsed: sidebarCollapsed, show: sidebarOpen, 'icon-mode': sidebarIconMode }">
+        <nav class="pb-3">
+            <!-- 대시보드 (1depth) -->
+            <a href="#/home" class="nav-link single d-flex align-items-center gap-3 p-3 px-4 text-decoration-none fw-semibold" :class="{ active: isActiveRoute('home') }" :title="sidebarIconMode ? '대시보드' : ''">
+                <i class="bi bi-house-door" style="font-size: 1.25rem; width: 20px; text-align: center;"></i>
+                <span class="flex-grow-1" v-show="!sidebarIconMode">대시보드</span>
+            </a>
+
+            <!-- 아코디언 메뉴 -->
+            <div>
+                <div class="menu-section" v-for="(section, index) in menuSections" :key="index">
+                    <button class="menu-section-header d-flex justify-content-between align-items-center p-3 px-4"
+                            :class="{ open: section.isOpen }"
+                            :title="sidebarIconMode ? section.title : ''"
+                            @click="toggleSection(index)">
+                        <div class="d-flex align-items-center gap-3">
+                            <i :class="'bi ' + section.icon" style="font-size: 1.25rem;" class="text-secondary"></i>
+                            <span class="fw-semibold" style="font-size: 0.875rem;" v-show="!sidebarIconMode">{{ section.title }}</span>
+                        </div>
+                        <i class="bi bi-chevron-down section-icon" style="font-size: 0.875rem;" class="text-secondary" v-show="!sidebarIconMode"></i>
+                    </button>
+
+                    <!-- 일반 모드: 아코디언 -->
+                    <div class="menu-section-content" :class="{ show: section.isOpen }" v-show="!sidebarIconMode">
+                        <ul class="list-unstyled py-3 m-0">
+                            <li v-for="item in section.items" :key="item.path">
+                                <a :href="'#/' + item.path"
+                                   class="nav-link d-flex align-items-center gap-3 text-decoration-none"
+                                   style="padding: 0.5rem 1.5rem 0.5rem 3rem; font-size: 0.875rem;"
+                                   :class="{ active: isActiveRoute(item.path) }">
+                                    <i :class="'bi ' + item.icon" style="font-size: 1rem; width: 20px; text-align: center;"></i>
+                                    <span class="flex-grow-1">{{ item.label }}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 아이콘 모드: 플라이아웃 -->
+                    <div class="menu-flyout" v-show="sidebarIconMode && section.isOpen">
+                        <div class="flyout-header p-3 border-bottom">
+                            <h6 class="mb-0 fw-semibold">{{ section.title }}</h6>
+                        </div>
+                        <ul class="list-unstyled m-0">
+                            <li v-for="item in section.items" :key="item.path">
+                                <a :href="'#/' + item.path"
+                                   class="nav-link d-flex align-items-center gap-3 text-decoration-none p-3"
+                                   :class="{ active: isActiveRoute(item.path) }"
+                                   @click="closeFlyout(index)">
+                                    <i :class="'bi ' + item.icon" style="font-size: 1rem; width: 20px; text-align: center;"></i>
+                                    <span class="flex-grow-1">{{ item.label }}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="app-main p-4" :class="{ 'sidebar-open': sidebarOpen }">
+        <!-- 페이지 컨텐츠 (Vue 컴포넌트가 여기에 렌더링됨) -->
+        {{ content }}
+    </main>
+</div>

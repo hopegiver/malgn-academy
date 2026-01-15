@@ -1,0 +1,202 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">게시판 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">홈페이지의 게시판과 게시글을 관리합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showCreateModal = true">
+                <i class="bi bi-plus-lg me-2"></i>게시글 작성
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">검색</label>
+                    <input type="text" class="form-control" placeholder="제목, 내용 검색" v-model="searchKeyword">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">게시판</label>
+                    <select class="form-select" v-model="filterBoard">
+                        <option value="">전체 게시판</option>
+                        <option value="공지사항">공지사항</option>
+                        <option value="학원소식">학원소식</option>
+                        <option value="자료실">자료실</option>
+                        <option value="갤러리">갤러리</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">상태</label>
+                    <select class="form-select" v-model="filterStatus">
+                        <option value="">전체 상태</option>
+                        <option value="게시">게시</option>
+                        <option value="숨김">숨김</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">전체 게시글</div>
+                        <div class="fw-bold fs-4">{{ stats.totalPosts }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-clipboard"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번주 작성</div>
+                        <div class="fw-bold fs-4">{{ stats.weekPosts }}개</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">총 조회수</div>
+                        <div class="fw-bold fs-4">{{ stats.totalViews }}</div>
+                    </div>
+                    <div class="stat-icon warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">댓글수</div>
+                        <div class="fw-bold fs-4">{{ stats.totalComments }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-chat-left-text"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게시글 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">번호</th>
+                            <th class="fw-semibold p-3 border-bottom-2">게시판</th>
+                            <th class="fw-semibold p-3 border-bottom-2">제목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">작성자</th>
+                            <th class="fw-semibold p-3 border-bottom-2">작성일</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">조회</th>
+                            <th class="fw-semibold p-3 border-bottom-2">상태</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(post, index) in filteredPosts" :key="post.id">
+                            <td class="p-3">{{ posts.length - index }}</td>
+                            <td class="p-3"><span class="badge bg-secondary" style="font-size: 0.8rem;">{{ post.board }}</span></td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ post.title }}</div>
+                                <div class="text-muted small" v-if="post.comments > 0">
+                                    <i class="bi bi-chat-left me-1"></i>{{ post.comments }}
+                                </div>
+                            </td>
+                            <td class="p-3">{{ post.author }}</td>
+                            <td class="p-3">{{ post.createdDate }}</td>
+                            <td class="p-3 text-center">{{ post.views }}</td>
+                            <td class="p-3">
+                                <span class="badge" :class="{
+                                    'bg-success': post.status === '게시',
+                                    'bg-secondary': post.status === '숨김'
+                                }" style="font-size: 0.8rem;">{{ post.status }}</span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" @click="editPost(post)">
+                                    수정
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" @click="deletePost(post.id)">
+                                    삭제
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게시글 작성/수정 모달 -->
+    <div class="modal fade" :class="{ show: showCreateModal, 'd-block': showCreateModal }" tabindex="-1" v-if="showCreateModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ currentPost.id ? '게시글 수정' : '게시글 작성' }}</h5>
+                    <button type="button" class="btn-close" @click="showCreateModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">게시판 <span class="text-danger">*</span></label>
+                            <select class="form-select" v-model="currentPost.board">
+                                <option value="">선택</option>
+                                <option value="공지사항">공지사항</option>
+                                <option value="학원소식">학원소식</option>
+                                <option value="자료실">자료실</option>
+                                <option value="갤러리">갤러리</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">상태</label>
+                            <select class="form-select" v-model="currentPost.status">
+                                <option value="게시">게시</option>
+                                <option value="숨김">숨김</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">제목 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="currentPost.title" placeholder="제목 입력">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">내용</label>
+                            <textarea class="form-control" rows="15" v-model="currentPost.content" placeholder="내용 입력 (HTML 지원)"></textarea>
+                            <small class="text-muted">HTML 태그를 사용할 수 있습니다.</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">첨부파일</label>
+                            <input type="file" class="form-control" multiple>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showCreateModal = false">취소</button>
+                    <button type="button" class="btn btn-primary" @click="savePost">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showCreateModal }" v-if="showCreateModal"></div>
+</div>

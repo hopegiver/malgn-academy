@@ -1,0 +1,134 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">시간표 관리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">주간 수업 시간표를 확인하고 관리합니다</p>
+            </div>
+            <div class="d-flex gap-2">
+                <select class="form-select" v-model="selectedWeek" @change="loadSchedule" style="width: 200px;">
+                    <option value="current">이번주</option>
+                    <option value="next">다음주</option>
+                    <option value="prev">지난주</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">총 수업</div>
+                        <div class="fw-bold fs-4">{{ stats.totalClasses }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-week"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">오늘 수업</div>
+                        <div class="fw-bold fs-4">{{ stats.todayClasses }}개</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">강의실</div>
+                        <div class="fw-bold fs-4">{{ stats.rooms }}개</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-door-open"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">강사</div>
+                        <div class="fw-bold fs-4">{{ stats.teachers }}명</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 시간표 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0" style="min-width: 900px;">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 text-center" style="width: 100px;">시간</th>
+                            <th class="fw-semibold p-3 text-center" v-for="day in weekDays" :key="day">{{ day }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="time in timeSlots" :key="time.slot">
+                            <td class="p-3 text-center bg-light fw-semibold">{{ time.label }}</td>
+                            <td class="p-2" v-for="day in weekDays" :key="day">
+                                <div v-for="cls in getClassesForSlot(day, time.slot)" :key="cls.id"
+                                     class="schedule-item rounded-2 p-2 mb-2 cursor-pointer"
+                                     :class="getClassTypeClass(cls.subject)"
+                                     @click="viewClassDetail(cls)">
+                                    <div class="fw-bold small">{{ cls.name }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        {{ cls.teacher }} / {{ cls.room }}
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">
+                                        {{ cls.students }}명
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="card border rounded-3 mt-4">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3">과목 구분</h6>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-2" style="width: 16px; height: 16px; background-color: #e7f1ff;"></div>
+                    <span class="small">수학</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-2" style="width: 16px; height: 16px; background-color: #d4edda;"></div>
+                    <span class="small">영어</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-2" style="width: 16px; height: 16px; background-color: #d1ecf1;"></div>
+                    <span class="small">과학</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-2" style="width: 16px; height: 16px; background-color: #fff3cd;"></div>
+                    <span class="small">국어</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

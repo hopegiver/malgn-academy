@@ -1,0 +1,218 @@
+<div class="w-100">
+    <!-- 페이지 헤더 -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">수납 처리</h1>
+                <p class="text-secondary mb-0" style="font-size: 0.875rem;">학생의 수강료 및 기타 비용을 수납합니다</p>
+            </div>
+            <button class="btn btn-primary" @click="showPaymentModal">
+                <i class="bi bi-plus-circle me-2"></i>수납 등록
+            </button>
+        </div>
+    </div>
+
+    <!-- 검색 및 필터 영역 -->
+    <div class="card border rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">검색</label>
+                    <input type="text" class="form-control" v-model="searchKeyword" @input="handleSearch" placeholder="학생명으로 검색">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">결제수단</label>
+                    <select class="form-select" v-model="filters.method" @change="handleFilter">
+                        <option value="">전체</option>
+                        <option value="card">카드</option>
+                        <option value="cash">현금</option>
+                        <option value="transfer">계좌이체</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold small">기간</label>
+                    <select class="form-select" v-model="filters.period" @change="handleFilter">
+                        <option value="all">전체</option>
+                        <option value="today">오늘</option>
+                        <option value="week">이번주</option>
+                        <option value="month">이번달</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">오늘 수납</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(stats.todayAmount) }}</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">이번달 수납</div>
+                        <div class="fw-bold fs-4">{{ formatCurrency(stats.monthAmount) }}</div>
+                    </div>
+                    <div class="stat-icon success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">미수납액</div>
+                        <div class="fw-bold fs-4 text-danger">{{ formatCurrency(stats.unpaidAmount) }}</div>
+                    </div>
+                    <div class="stat-icon danger rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="stat-card rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-secondary small">수납 건수</div>
+                        <div class="fw-bold fs-4">{{ stats.count }}건</div>
+                    </div>
+                    <div class="stat-icon primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수납 목록 -->
+    <div class="card border rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-semibold p-3 border-bottom-2">날짜</th>
+                            <th class="fw-semibold p-3 border-bottom-2">학생명</th>
+                            <th class="fw-semibold p-3 border-bottom-2">항목</th>
+                            <th class="fw-semibold p-3 border-bottom-2">금액</th>
+                            <th class="fw-semibold p-3 border-bottom-2">결제수단</th>
+                            <th class="fw-semibold p-3 border-bottom-2">처리자</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">영수증</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="payment in filteredPayments" :key="payment.id">
+                            <td class="p-3">{{ payment.date }}</td>
+                            <td class="p-3">
+                                <div class="fw-semibold">{{ payment.studentName }}</div>
+                                <div class="text-muted small">{{ payment.grade }}</div>
+                            </td>
+                            <td class="p-3">{{ payment.item }}</td>
+                            <td class="p-3">
+                                <span class="fw-semibold">{{ formatCurrency(payment.amount) }}원</span>
+                            </td>
+                            <td class="p-3">
+                                <span class="badge" style="font-size: 0.8rem;" :class="getMethodBadgeClass(payment.method)">
+                                    {{ getMethodText(payment.method) }}
+                                </span>
+                            </td>
+                            <td class="p-3">{{ payment.processor }}</td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary" @click="printReceipt(payment)">
+                                    <i class="bi bi-printer"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredPayments.length === 0">
+                            <td colspan="7" class="text-center p-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                검색 결과가 없습니다
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: 수납 등록 -->
+    <div class="modal fade" :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }" tabindex="-1" @click.self="closeModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">수납 등록</h5>
+                    <button type="button" class="btn-close" @click="closeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="handleSubmit">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">학생 선택 <span class="text-danger">*</span></label>
+                            <select class="form-select" v-model="modalData.studentId" required @change="loadStudentInfo">
+                                <option value="">선택</option>
+                                <option value="1">김철수 (고1)</option>
+                                <option value="2">이영희 (중2)</option>
+                                <option value="3">박민수 (고3)</option>
+                                <option value="4">최지훈 (중1)</option>
+                                <option value="5">정수진 (고2)</option>
+                            </select>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수납 항목 <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="modalData.item" required>
+                                    <option value="">선택</option>
+                                    <option value="tuition">수강료</option>
+                                    <option value="book">교재비</option>
+                                    <option value="exam">시험비</option>
+                                    <option value="etc">기타</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">금액 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" v-model="modalData.amount" required placeholder="금액 입력">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">결제수단 <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="modalData.method" required>
+                                    <option value="">선택</option>
+                                    <option value="card">카드</option>
+                                    <option value="cash">현금</option>
+                                    <option value="transfer">계좌이체</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">수납일 <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" v-model="modalData.date" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">메모</label>
+                            <textarea class="form-control" v-model="modalData.memo" rows="3" placeholder="메모를 입력하세요"></textarea>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" @click="closeModal">취소</button>
+                            <button type="submit" class="btn btn-primary">등록</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showModal }" :style="{ display: showModal ? 'block' : 'none' }" v-if="showModal"></div>
+</div>
