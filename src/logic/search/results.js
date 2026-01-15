@@ -111,23 +111,25 @@ export default {
     mounted() {
         this.loadSearchQuery();
         // URL 변경 감지 (같은 페이지에서 쿼리만 바뀔 때)
-        window.addEventListener('hashchange', this.loadSearchQuery);
+        this._hashchangeHandler = () => {
+            // 현재 페이지가 검색 결과 페이지일 때만 처리
+            if (window.location.hash.startsWith('#/search/results')) {
+                this.loadSearchQuery();
+            }
+        };
+        window.addEventListener('hashchange', this._hashchangeHandler);
     },
 
     beforeUnmount() {
-        window.removeEventListener('hashchange', this.loadSearchQuery);
+        if (this._hashchangeHandler) {
+            window.removeEventListener('hashchange', this._hashchangeHandler);
+        }
     },
 
     methods: {
         // URL에서 검색어 가져오기
         loadSearchQuery() {
             const hash = window.location.hash;
-
-            // 현재 페이지가 검색 결과 페이지가 아니면 무시
-            if (!hash.startsWith('#/search/results')) {
-                return;
-            }
-
             const queryMatch = hash.match(/\?q=([^&]+)/);
 
             if (queryMatch) {
