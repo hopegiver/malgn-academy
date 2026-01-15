@@ -541,6 +541,16 @@ body {
     }
 }
 
+/* 모바일 검색창 */
+.mobile-search-bar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    z-index: 998;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* 모바일 (≤768px) */
 @media (max-width: 768px) {
     .app-sidebar {
@@ -549,10 +559,6 @@ body {
 
     .app-sidebar.show {
         transform: translateX(0);
-    }
-
-    .header-center {
-        display: none;
     }
 
     /* 모바일 터치 영역 */

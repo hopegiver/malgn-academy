@@ -15,6 +15,7 @@ export default {
             sidebarCollapsed: false,
             sidebarOpen: window.innerWidth > 1024,  // 데스크톱에서만 기본으로 열림
             showNotifications: false,
+            showMobileSearch: false,  // 모바일 검색창 표시 여부
             isMobile: window.innerWidth <= 768,
             isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
             isDesktop: window.innerWidth > 1024,
@@ -318,6 +319,12 @@ export default {
             const query = encodeURIComponent(this.searchQuery.trim());
             window.location.hash = '#/search/results?q=' + query;
             this.searchQuery = '';
+            this.showMobileSearch = false;  // 모바일 검색 후 닫기
+        },
+
+        // 모바일 검색 토글
+        toggleMobileSearch() {
+            this.showMobileSearch = !this.showMobileSearch;
         },
 
         // 로그아웃
