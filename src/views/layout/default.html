@@ -158,11 +158,17 @@
     <!-- 아이콘 모드 플라이아웃 메뉴 (사이드바 외부) -->
     <div class="flyout-menus-container" v-if="sidebarIconMode">
         <div v-for="(section, index) in menuSections" :key="'flyout-' + index">
-            <div class="menu-flyout" v-show="section.isOpen" :style="{ top: (section.flyoutTop || 0) + 'px' }">
+            <div class="menu-flyout" v-show="section.isOpen" :style="{
+                top: (section.flyoutTop || 0) + 'px',
+                maxHeight: section.flyoutMaxHeight ? section.flyoutMaxHeight + 'px' : 'none'
+            }">
                 <div class="flyout-header p-3 border-bottom">
                     <h6 class="mb-0 fw-semibold">{{ section.title }}</h6>
                 </div>
-                <ul class="list-unstyled m-0">
+                <ul class="list-unstyled m-0" :style="{
+                    maxHeight: section.flyoutMaxHeight ? (section.flyoutMaxHeight - 60) + 'px' : 'none',
+                    overflowY: section.flyoutMaxHeight ? 'auto' : 'visible'
+                }">
                     <li v-for="item in section.items" :key="item.path">
                         <a :href="'#/' + item.path"
                            class="nav-link d-flex align-items-center gap-3 text-decoration-none p-3"
