@@ -433,6 +433,8 @@ body {
 /* 사이드바 아이콘 모드 (태블릿용) */
 .app-sidebar.icon-mode {
     width: var(--sidebar-icon-width);
+    overflow-y: visible;
+    overflow-x: visible;
 }
 
 .app-sidebar.icon-mode .menu-section-header {
