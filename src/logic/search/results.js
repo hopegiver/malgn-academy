@@ -122,6 +122,12 @@ export default {
         // URL에서 검색어 가져오기
         loadSearchQuery() {
             const hash = window.location.hash;
+
+            // 현재 페이지가 검색 결과 페이지가 아니면 무시
+            if (!hash.startsWith('#/search/results')) {
+                return;
+            }
+
             const queryMatch = hash.match(/\?q=([^&]+)/);
 
             if (queryMatch) {
