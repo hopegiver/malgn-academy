@@ -1,6 +1,7 @@
 export default {
     name: 'Login',
     layout: null,
+
     data() {
         return {
             loginForm: {
@@ -23,7 +24,6 @@ export default {
                 phone: ''
             },
             passwordReset: false,
-            // 테스트용 계정 (실제로는 서버에서 검증)
             accounts: [
                 { username: 'admin', password: 'admin123', name: '관리자', phone: '010-0000-0000', role: 'admin' },
                 { username: 'teacher1', password: 'teacher123', name: '박선생', phone: '010-1111-2222', role: 'teacher' },
@@ -31,6 +31,7 @@ export default {
             ]
         };
     },
+
     methods: {
         async handleLogin() {
             if (!this.loginForm.username.trim()) {
@@ -44,14 +45,12 @@ export default {
 
             this.isLoading = true;
 
-            // 로그인 처리 (실제로는 서버 API 호출)
             setTimeout(() => {
                 const account = this.accounts.find(
                     acc => acc.username === this.loginForm.username && acc.password === this.loginForm.password
                 );
 
                 if (account) {
-                    // 로그인 성공
                     if (this.loginForm.rememberMe) {
                         localStorage.setItem('rememberMe', 'true');
                         localStorage.setItem('username', this.loginForm.username);
@@ -60,7 +59,6 @@ export default {
                         localStorage.removeItem('username');
                     }
 
-                    // 사용자 정보 저장
                     sessionStorage.setItem('user', JSON.stringify({
                         username: account.username,
                         name: account.name,
@@ -68,20 +66,19 @@ export default {
                     }));
 
                     alert(`${account.name}님, 환영합니다!`);
-
-                    // 대시보드로 이동
                     window.location.href = '#/home';
                 } else {
-                    // 로그인 실패
                     alert('아이디 또는 비밀번호가 올바르지 않습니다.');
                 }
 
                 this.isLoading = false;
             }, 1000);
         },
+
         togglePassword() {
             this.showPassword = !this.showPassword;
         },
+
         findId() {
             if (!this.findIdForm.name.trim()) {
                 alert('이름을 입력해주세요.');
@@ -92,7 +89,6 @@ export default {
                 return;
             }
 
-            // 아이디 찾기 (실제로는 서버 API 호출)
             const account = this.accounts.find(
                 acc => acc.name === this.findIdForm.name && acc.phone === this.findIdForm.phone
             );
@@ -104,6 +100,7 @@ export default {
                 this.foundId = '';
             }
         },
+
         resetPassword() {
             if (!this.resetPasswordForm.username.trim()) {
                 alert('아이디를 입력해주세요.');
@@ -118,7 +115,6 @@ export default {
                 return;
             }
 
-            // 비밀번호 재설정 (실제로는 서버 API 호출)
             const account = this.accounts.find(
                 acc => acc.username === this.resetPasswordForm.username &&
                        acc.name === this.resetPasswordForm.name &&
@@ -139,8 +135,8 @@ export default {
             }
         }
     },
+
     mounted() {
-        // 로그인 유지 체크
         const rememberMe = localStorage.getItem('rememberMe');
         if (rememberMe === 'true') {
             const savedUsername = localStorage.getItem('username');
