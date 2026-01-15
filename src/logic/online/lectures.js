@@ -25,6 +25,19 @@ export default {
                 videoType: 'youtube', // 'upload', 'youtube', 'vimeo'
                 order: 1
             },
+            // 카테고리 관리
+            showCategoryModal: false,
+            categories: [
+                { id: 1, name: '수학', order: 1 },
+                { id: 2, name: '영어', order: 2 },
+                { id: 3, name: '과학', order: 3 },
+                { id: 4, name: '국어', order: 4 }
+            ],
+            currentCategory: {
+                id: null,
+                name: '',
+                order: 1
+            },
             stats: {
                 totalLectures: 24,
                 publicLectures: 18,
@@ -258,6 +271,92 @@ export default {
                 duration: 0,
                 videoUrl: '',
                 videoType: 'youtube',
+                order: 1
+            };
+        },
+        // 카테고리 추가
+        addCategory() {
+            this.currentCategory = {
+                id: null,
+                name: '',
+                order: this.categories.length + 1
+            };
+        },
+        // 카테고리 수정
+        editCategory(category) {
+            this.currentCategory = { ...category };
+        },
+        // 카테고리 저장
+        saveCategory() {
+            if (!this.currentCategory.name.trim()) {
+                alert('카테고리명을 입력해주세요.');
+                return;
+            }
+
+            if (this.currentCategory.id) {
+                // 수정
+                const index = this.categories.findIndex(c => c.id === this.currentCategory.id);
+                if (index !== -1) {
+                    this.categories[index] = { ...this.currentCategory };
+                }
+                alert('카테고리가 수정되었습니다.');
+            } else {
+                // 추가
+                this.currentCategory.id = Date.now();
+                this.categories.push({ ...this.currentCategory });
+                alert('카테고리가 추가되었습니다.');
+            }
+
+            this.resetCategoryForm();
+        },
+        // 카테고리 삭제
+        deleteCategory(categoryId) {
+            // 해당 카테고리를 사용하는 강의 확인
+            const usedInLectures = this.lectures.some(lecture => {
+                const category = this.categories.find(c => c.id === categoryId);
+                return category && lecture.category === category.name;
+            });
+
+            if (usedInLectures) {
+                alert('이 카테고리를 사용하는 강의가 있어 삭제할 수 없습니다.');
+                return;
+            }
+
+            if (!confirm('이 카테고리를 삭제하시겠습니까?')) {
+                return;
+            }
+
+            this.categories = this.categories.filter(c => c.id !== categoryId);
+            // 순서 재정렬
+            this.categories.forEach((category, index) => {
+                category.order = index + 1;
+            });
+            alert('카테고리가 삭제되었습니다.');
+        },
+        // 카테고리 순서 변경
+        moveCategoryUp(index) {
+            if (index === 0) return;
+            const categories = this.categories;
+            [categories[index], categories[index - 1]] = [categories[index - 1], categories[index]];
+            // 순서 재정렬
+            categories.forEach((category, idx) => {
+                category.order = idx + 1;
+            });
+        },
+        moveCategoryDown(index) {
+            const categories = this.categories;
+            if (index === categories.length - 1) return;
+            [categories[index], categories[index + 1]] = [categories[index + 1], categories[index]];
+            // 순서 재정렬
+            categories.forEach((category, idx) => {
+                category.order = idx + 1;
+            });
+        },
+        // 카테고리 폼 초기화
+        resetCategoryForm() {
+            this.currentCategory = {
+                id: null,
+                name: '',
                 order: 1
             };
         }

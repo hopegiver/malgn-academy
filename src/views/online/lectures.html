@@ -6,9 +6,14 @@
                 <h1 class="fw-bold mb-1" style="font-size: 1.75rem;">강의 관리</h1>
                 <p class="text-secondary mb-0" style="font-size: 0.875rem;">온라인 강의를 등록하고 관리합니다</p>
             </div>
-            <button class="btn btn-primary" @click="showCreateModal = true">
-                <i class="bi bi-plus-lg me-2"></i>강의 등록
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary" @click="showCategoryModal = true">
+                    <i class="bi bi-tag me-2"></i>카테고리 관리
+                </button>
+                <button class="btn btn-primary" @click="showCreateModal = true">
+                    <i class="bi bi-plus-lg me-2"></i>강의 등록
+                </button>
+            </div>
         </div>
     </div>
 
@@ -171,10 +176,9 @@
                             <label class="form-label fw-semibold">카테고리 <span class="text-danger">*</span></label>
                             <select class="form-select" v-model="currentLecture.category">
                                 <option value="">선택</option>
-                                <option value="수학">수학</option>
-                                <option value="영어">영어</option>
-                                <option value="과학">과학</option>
-                                <option value="국어">국어</option>
+                                <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    {{ category.name }}
+                                </option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -300,4 +304,88 @@
         </div>
     </div>
     <div class="modal-backdrop fade" :class="{ show: showLessonModal }" v-if="showLessonModal" style="z-index: 1055;"></div>
+
+    <!-- 카테고리 관리 모달 -->
+    <div class="modal fade" :class="{ show: showCategoryModal, 'd-block': showCategoryModal }" tabindex="-1" v-if="showCategoryModal" style="z-index: 1050;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">카테고리 관리</h5>
+                    <button type="button" class="btn-close" @click="showCategoryModal = false; resetCategoryForm()"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 카테고리 추가 폼 -->
+                    <div class="card border-0 mb-3" :class="currentCategory.id ? 'bg-warning bg-opacity-10' : 'bg-light'">
+                        <div class="card-body">
+                            <div class="mb-2" v-if="currentCategory.id">
+                                <small class="text-warning fw-semibold">
+                                    <i class="bi bi-pencil me-1"></i>카테고리 수정 중
+                                </small>
+                            </div>
+                            <div class="row g-2">
+                                <div :class="currentCategory.id ? 'col-12' : 'col-8'">
+                                    <input type="text" class="form-control" v-model="currentCategory.name"
+                                           placeholder="새 카테고리명 입력"
+                                           @keyup.enter="saveCategory">
+                                </div>
+                                <div class="col-6" v-if="currentCategory.id">
+                                    <button type="button" class="btn btn-secondary w-100" @click="resetCategoryForm">
+                                        <i class="bi bi-x-lg me-1"></i>취소
+                                    </button>
+                                </div>
+                                <div :class="currentCategory.id ? 'col-6' : 'col-4'">
+                                    <button type="button" class="btn btn-success w-100" @click="saveCategory">
+                                        <i class="bi bi-plus-lg me-1"></i>{{ currentCategory.id ? '수정' : '추가' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 카테고리 목록 -->
+                    <div v-if="categories.length === 0" class="alert alert-info">
+                        등록된 카테고리가 없습니다.
+                    </div>
+
+                    <div class="list-group" v-else>
+                        <div class="list-group-item d-flex justify-content-between align-items-center"
+                             v-for="(category, index) in categories" :key="category.id">
+                            <div>
+                                <span class="fw-semibold">{{ category.name }}</span>
+                                <span class="text-muted ms-2 small">순서: {{ category.order }}</span>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        @click="moveCategoryUp(index)"
+                                        :disabled="index === 0"
+                                        title="위로">
+                                    <i class="bi bi-arrow-up"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        @click="moveCategoryDown(index)"
+                                        :disabled="index === categories.length - 1"
+                                        title="아래로">
+                                    <i class="bi bi-arrow-down"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary"
+                                        @click="editCategory(category)"
+                                        title="수정">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @click="deleteCategory(category.id)"
+                                        title="삭제">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showCategoryModal = false; resetCategoryForm()">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showCategoryModal }" v-if="showCategoryModal" style="z-index: 1045;"></div>
 </div>
