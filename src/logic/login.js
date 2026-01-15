@@ -1,4 +1,5 @@
 export default {
+    name: 'Login',
     layout: null,
     data() {
         return {
