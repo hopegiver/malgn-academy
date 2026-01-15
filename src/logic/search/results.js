@@ -109,20 +109,30 @@ export default {
     },
 
     mounted() {
-        // URL에서 검색어 가져오기
-        const hash = window.location.hash;
-        const queryMatch = hash.match(/\?q=([^&]+)/);
+        this.loadSearchQuery();
+        // URL 변경 감지 (같은 페이지에서 쿼리만 바뀔 때)
+        window.addEventListener('hashchange', this.loadSearchQuery);
+    },
 
-        if (queryMatch) {
-            this.searchQuery = decodeURIComponent(queryMatch[1]);
-            this.performSearch();
-        } else {
-            // 검색어가 없으면 홈으로 리다이렉트
-            window.location.hash = '#/home';
-        }
+    beforeUnmount() {
+        window.removeEventListener('hashchange', this.loadSearchQuery);
     },
 
     methods: {
+        // URL에서 검색어 가져오기
+        loadSearchQuery() {
+            const hash = window.location.hash;
+            const queryMatch = hash.match(/\?q=([^&]+)/);
+
+            if (queryMatch) {
+                this.searchQuery = decodeURIComponent(queryMatch[1]);
+                this.performSearch();
+            } else {
+                // 검색어가 없으면 홈으로 리다이렉트
+                window.location.hash = '#/home';
+            }
+        },
+
         performSearch() {
             if (!this.searchQuery.trim()) {
                 return;
