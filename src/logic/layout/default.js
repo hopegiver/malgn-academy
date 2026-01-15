@@ -310,8 +310,8 @@ export default {
             this.unreadCount = 0;
         },
 
-        // 검색 처리
-        handleSearch() {
+        // 헤더 검색 처리
+        handleHeaderSearch() {
             if (!this.searchQuery.trim()) {
                 return;
             }
