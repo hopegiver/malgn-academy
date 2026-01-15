@@ -1,4 +1,5 @@
 export default {
+    layout: null,
     data() {
         return {
             loginForm: {
