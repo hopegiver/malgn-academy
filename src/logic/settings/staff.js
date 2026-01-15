@@ -9,31 +9,66 @@ export default {
                     id: 1, name: '박선생', position: 'teacher', phone: '010-1111-2222', email: 'park@academy.com',
                     subject: '수학', hireDate: '2020-03-01', status: 'active',
                     username: 'teacher1', lastLogin: '2026-01-15 10:15',
-                    permissions: { students: true, courses: true, payment: false, attendance: true, grades: true, reports: false }
+                    permissions: {
+                        students: { view: true, create: true, update: true, delete: false, export: true },
+                        courses: { view: true, create: true, update: true, delete: false, export: false },
+                        payment: { view: false, create: false, update: false, delete: false, export: false },
+                        attendance: { view: true, create: true, update: true, delete: false, export: true },
+                        grades: { view: true, create: true, update: true, delete: false, export: true },
+                        reports: { view: false, export: false }
+                    }
                 },
                 {
                     id: 2, name: '이선생', position: 'teacher', phone: '010-2222-3333', email: 'lee@academy.com',
                     subject: '영어', hireDate: '2019-09-01', status: 'active',
                     username: 'teacher2', lastLogin: '2026-01-15 13:20',
-                    permissions: { students: true, courses: true, payment: false, attendance: true, grades: true, reports: false }
+                    permissions: {
+                        students: { view: true, create: false, update: true, delete: false, export: false },
+                        courses: { view: true, create: true, update: true, delete: false, export: false },
+                        payment: { view: false, create: false, update: false, delete: false, export: false },
+                        attendance: { view: true, create: true, update: true, delete: false, export: false },
+                        grades: { view: true, create: true, update: true, delete: false, export: true },
+                        reports: { view: false, export: false }
+                    }
                 },
                 {
                     id: 3, name: '최선생', position: 'teacher', phone: '010-3333-4444', email: 'choi@academy.com',
                     subject: '과학', hireDate: '2021-03-01', status: 'active',
                     username: 'teacher3', lastLogin: '2026-01-14 18:30',
-                    permissions: { students: true, courses: true, payment: false, attendance: true, grades: true, reports: false }
+                    permissions: {
+                        students: { view: true, create: false, update: false, delete: false, export: false },
+                        courses: { view: true, create: true, update: true, delete: false, export: false },
+                        payment: { view: false, create: false, update: false, delete: false, export: false },
+                        attendance: { view: true, create: true, update: true, delete: false, export: false },
+                        grades: { view: true, create: true, update: true, delete: false, export: false },
+                        reports: { view: false, export: false }
+                    }
                 },
                 {
                     id: 4, name: '김관리자', position: 'admin', phone: '010-4444-5555', email: 'admin@academy.com',
                     subject: '', hireDate: '2018-01-01', status: 'active',
                     username: 'admin', lastLogin: '2026-01-15 14:30',
-                    permissions: { students: true, courses: true, payment: true, attendance: true, grades: true, reports: true }
+                    permissions: {
+                        students: { view: true, create: true, update: true, delete: true, export: true },
+                        courses: { view: true, create: true, update: true, delete: true, export: true },
+                        payment: { view: true, create: true, update: true, delete: true, export: true },
+                        attendance: { view: true, create: true, update: true, delete: true, export: true },
+                        grades: { view: true, create: true, update: true, delete: true, export: true },
+                        reports: { view: true, export: true }
+                    }
                 },
                 {
                     id: 5, name: '홍직원', position: 'staff', phone: '010-5555-6666', email: 'hong@academy.com',
                     subject: '', hireDate: '2022-06-01', status: 'active',
                     username: 'staff1', lastLogin: '2026-01-15 09:00',
-                    permissions: { students: true, courses: false, payment: true, attendance: true, grades: false, reports: false }
+                    permissions: {
+                        students: { view: true, create: true, update: false, delete: false, export: false },
+                        courses: { view: false, create: false, update: false, delete: false, export: false },
+                        payment: { view: true, create: true, update: false, delete: false, export: false },
+                        attendance: { view: true, create: false, update: false, delete: false, export: false },
+                        grades: { view: false, create: false, update: false, delete: false, export: false },
+                        reports: { view: false, export: false }
+                    }
                 }
             ],
             showStaffModal: false,
@@ -53,12 +88,12 @@ export default {
             },
             selectedStaff: null,
             permissionForm: {
-                students: false,
-                courses: false,
-                payment: false,
-                attendance: false,
-                grades: false,
-                reports: false
+                students: { view: false, create: false, update: false, delete: false, export: false },
+                courses: { view: false, create: false, update: false, delete: false, export: false },
+                payment: { view: false, create: false, update: false, delete: false, export: false },
+                attendance: { view: false, create: false, update: false, delete: false, export: false },
+                grades: { view: false, create: false, update: false, delete: false, export: false },
+                reports: { view: false, export: false }
             }
         };
     },
@@ -182,7 +217,14 @@ export default {
                     status: this.staffForm.status,
                     username: this.staffForm.username,
                     lastLogin: '-',
-                    permissions: { students: false, courses: false, payment: false, attendance: false, grades: false, reports: false }
+                    permissions: {
+                        students: { view: false, create: false, update: false, delete: false, export: false },
+                        courses: { view: false, create: false, update: false, delete: false, export: false },
+                        payment: { view: false, create: false, update: false, delete: false, export: false },
+                        attendance: { view: false, create: false, update: false, delete: false, export: false },
+                        grades: { view: false, create: false, update: false, delete: false, export: false },
+                        reports: { view: false, export: false }
+                    }
                 };
                 this.staffList.unshift(newStaff);
                 alert('직원이 등록되었습니다.');
@@ -205,19 +247,49 @@ export default {
         },
         openPermissions(staff) {
             this.selectedStaff = staff;
-            this.permissionForm = { ...staff.permissions };
+            // Deep copy permissions
+            this.permissionForm = {
+                students: { ...staff.permissions.students },
+                courses: { ...staff.permissions.courses },
+                payment: { ...staff.permissions.payment },
+                attendance: { ...staff.permissions.attendance },
+                grades: { ...staff.permissions.grades },
+                reports: { ...staff.permissions.reports }
+            };
             this.showPermissionModal = true;
         },
         savePermissions() {
             if (this.selectedStaff) {
                 const index = this.staffList.findIndex(s => s.id === this.selectedStaff.id);
                 if (index !== -1) {
-                    this.staffList[index].permissions = { ...this.permissionForm };
+                    this.staffList[index].permissions = {
+                        students: { ...this.permissionForm.students },
+                        courses: { ...this.permissionForm.courses },
+                        payment: { ...this.permissionForm.payment },
+                        attendance: { ...this.permissionForm.attendance },
+                        grades: { ...this.permissionForm.grades },
+                        reports: { ...this.permissionForm.reports }
+                    };
                 }
                 alert('권한이 저장되었습니다.');
             }
             this.showPermissionModal = false;
             this.selectedStaff = null;
+        },
+        // 특정 메뉴의 모든 권한 토글
+        toggleAllPermissions(menu) {
+            const allChecked = this.isAllChecked(menu);
+            const perms = this.permissionForm[menu];
+
+            // 모든 권한을 반대로 설정
+            Object.keys(perms).forEach(key => {
+                perms[key] = !allChecked;
+            });
+        },
+        // 특정 메뉴의 모든 권한이 체크되어 있는지 확인
+        isAllChecked(menu) {
+            const perms = this.permissionForm[menu];
+            return Object.values(perms).every(val => val === true);
         },
         getPositionText(position) {
             const positions = { teacher: '강사', admin: '관리자', staff: '직원' };

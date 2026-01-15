@@ -229,37 +229,285 @@
 
     <!-- 권한 설정 모달 -->
     <div class="modal fade" :class="{ show: showPermissionModal, 'd-block': showPermissionModal }" tabindex="-1" v-if="showPermissionModal">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">권한 설정 - {{ selectedStaff ? selectedStaff.name : '' }}</h5>
                     <button type="button" class="btn-close" @click="showPermissionModal = false"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" v-model="permissionForm.students" id="perm-students">
-                            <label class="form-check-label" for="perm-students">학생 관리</label>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="alert alert-info small mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        메뉴별로 세부 권한(조회/등록/수정/삭제/내보내기)을 설정할 수 있습니다.
+                    </div>
+
+                    <!-- 학생 관리 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">
+                                    <i class="bi bi-person me-2"></i>학생 관리
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary" @click="toggleAllPermissions('students')">
+                                    전체 {{ isAllChecked('students') ? '해제' : '선택' }}
+                                </button>
+                            </div>
                         </div>
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" v-model="permissionForm.courses" id="perm-courses">
-                            <label class="form-check-label" for="perm-courses">수업 관리</label>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.students.view" id="students-view">
+                                        <label class="form-check-label" for="students-view">조회</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.students.create" id="students-create">
+                                        <label class="form-check-label" for="students-create">등록</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.students.update" id="students-update">
+                                        <label class="form-check-label" for="students-update">수정</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.students.delete" id="students-delete">
+                                        <label class="form-check-label" for="students-delete">삭제</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.students.export" id="students-export">
+                                        <label class="form-check-label" for="students-export">내보내기</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" v-model="permissionForm.payment" id="perm-payment">
-                            <label class="form-check-label" for="perm-payment">수납 관리</label>
+                    </div>
+
+                    <!-- 수업 관리 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">
+                                    <i class="bi bi-book me-2"></i>수업 관리
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary" @click="toggleAllPermissions('courses')">
+                                    전체 {{ isAllChecked('courses') ? '해제' : '선택' }}
+                                </button>
+                            </div>
                         </div>
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance" id="perm-attendance">
-                            <label class="form-check-label" for="perm-attendance">출결 관리</label>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.courses.view" id="courses-view">
+                                        <label class="form-check-label" for="courses-view">조회</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.courses.create" id="courses-create">
+                                        <label class="form-check-label" for="courses-create">등록</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.courses.update" id="courses-update">
+                                        <label class="form-check-label" for="courses-update">수정</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.courses.delete" id="courses-delete">
+                                        <label class="form-check-label" for="courses-delete">삭제</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.courses.export" id="courses-export">
+                                        <label class="form-check-label" for="courses-export">내보내기</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" v-model="permissionForm.grades" id="perm-grades">
-                            <label class="form-check-label" for="perm-grades">성적 관리</label>
+                    </div>
+
+                    <!-- 수납 관리 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">
+                                    <i class="bi bi-credit-card me-2"></i>수납 관리
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary" @click="toggleAllPermissions('payment')">
+                                    전체 {{ isAllChecked('payment') ? '해제' : '선택' }}
+                                </button>
+                            </div>
                         </div>
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" v-model="permissionForm.reports" id="perm-reports">
-                            <label class="form-check-label" for="perm-reports">통계/보고서</label>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.payment.view" id="payment-view">
+                                        <label class="form-check-label" for="payment-view">조회</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.payment.create" id="payment-create">
+                                        <label class="form-check-label" for="payment-create">등록</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.payment.update" id="payment-update">
+                                        <label class="form-check-label" for="payment-update">수정</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.payment.delete" id="payment-delete">
+                                        <label class="form-check-label" for="payment-delete">삭제</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.payment.export" id="payment-export">
+                                        <label class="form-check-label" for="payment-export">내보내기</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 출결 관리 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">
+                                    <i class="bi bi-calendar-check me-2"></i>출결 관리
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary" @click="toggleAllPermissions('attendance')">
+                                    전체 {{ isAllChecked('attendance') ? '해제' : '선택' }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance.view" id="attendance-view">
+                                        <label class="form-check-label" for="attendance-view">조회</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance.create" id="attendance-create">
+                                        <label class="form-check-label" for="attendance-create">등록</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance.update" id="attendance-update">
+                                        <label class="form-check-label" for="attendance-update">수정</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance.delete" id="attendance-delete">
+                                        <label class="form-check-label" for="attendance-delete">삭제</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.attendance.export" id="attendance-export">
+                                        <label class="form-check-label" for="attendance-export">내보내기</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 성적 관리 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">
+                                    <i class="bi bi-trophy me-2"></i>성적 관리
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary" @click="toggleAllPermissions('grades')">
+                                    전체 {{ isAllChecked('grades') ? '해제' : '선택' }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.grades.view" id="grades-view">
+                                        <label class="form-check-label" for="grades-view">조회</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.grades.create" id="grades-create">
+                                        <label class="form-check-label" for="grades-create">등록</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.grades.update" id="grades-update">
+                                        <label class="form-check-label" for="grades-update">수정</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.grades.delete" id="grades-delete">
+                                        <label class="form-check-label" for="grades-delete">삭제</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.grades.export" id="grades-export">
+                                        <label class="form-check-label" for="grades-export">내보내기</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 통계/보고서 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">
+                                    <i class="bi bi-graph-up me-2"></i>통계/보고서
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary" @click="toggleAllPermissions('reports')">
+                                    전체 {{ isAllChecked('reports') ? '해제' : '선택' }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.reports.view" id="reports-view">
+                                        <label class="form-check-label" for="reports-view">조회</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" v-model="permissionForm.reports.export" id="reports-export">
+                                        <label class="form-check-label" for="reports-export">내보내기</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
