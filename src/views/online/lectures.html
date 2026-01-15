@@ -110,7 +110,8 @@
                             <th class="fw-semibold p-3 border-bottom-2">강의명</th>
                             <th class="fw-semibold p-3 border-bottom-2">카테고리</th>
                             <th class="fw-semibold p-3 border-bottom-2">강사</th>
-                            <th class="fw-semibold p-3 border-bottom-2">수강생</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">강의수</th>
+                            <th class="fw-semibold p-3 border-bottom-2 text-center">수강생</th>
                             <th class="fw-semibold p-3 border-bottom-2">등록일</th>
                             <th class="fw-semibold p-3 border-bottom-2">상태</th>
                             <th class="fw-semibold p-3 border-bottom-2 text-center">관리</th>
@@ -125,6 +126,9 @@
                             </td>
                             <td class="p-3"><span class="badge bg-secondary" style="font-size: 0.8rem;">{{ lecture.category }}</span></td>
                             <td class="p-3">{{ lecture.instructor }}</td>
+                            <td class="p-3 text-center">
+                                <span class="badge bg-info" style="font-size: 0.8rem;">{{ lecture.lessons.length }}강</span>
+                            </td>
                             <td class="p-3 text-center">{{ lecture.students }}명</td>
                             <td class="p-3">{{ lecture.createdDate }}</td>
                             <td class="p-3">
@@ -151,19 +155,19 @@
 
     <!-- 강의 등록/수정 모달 -->
     <div class="modal fade" :class="{ show: showCreateModal, 'd-block': showCreateModal }" tabindex="-1" v-if="showCreateModal">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ currentLecture.id ? '강의 수정' : '강의 등록' }}</h5>
                     <button type="button" class="btn-close" @click="showCreateModal = false"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-3">
+                    <div class="row g-3 mb-4">
                         <div class="col-12">
                             <label class="form-label fw-semibold">강의명 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" v-model="currentLecture.title" placeholder="강의명 입력">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">카테고리 <span class="text-danger">*</span></label>
                             <select class="form-select" v-model="currentLecture.category">
                                 <option value="">선택</option>
@@ -173,7 +177,7 @@
                                 <option value="국어">국어</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">강사 <span class="text-danger">*</span></label>
                             <select class="form-select" v-model="currentLecture.instructor">
                                 <option value="">선택</option>
@@ -182,11 +186,7 @@
                                 <option value="박민수">박민수</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">강의 시간</label>
-                            <input type="text" class="form-control" v-model="currentLecture.duration" placeholder="예: 60분">
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">상태</label>
                             <select class="form-select" v-model="currentLecture.status">
                                 <option value="공개">공개</option>
@@ -196,12 +196,46 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold">강의 설명</label>
-                            <textarea class="form-control" rows="4" v-model="currentLecture.description" placeholder="강의 설명 입력"></textarea>
+                            <textarea class="form-control" rows="3" v-model="currentLecture.description" placeholder="강의 설명 입력"></textarea>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">강의 영상</label>
-                            <input type="file" class="form-control" accept="video/*">
-                            <small class="text-muted">MP4, AVI, MOV 형식 지원</small>
+                    </div>
+
+                    <hr>
+
+                    <!-- 레슨 관리 섹션 -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">강의 목록 (총 {{ currentLecture.lessons.length }}강)</h6>
+                        <button type="button" class="btn btn-sm btn-success" @click="addLesson">
+                            <i class="bi bi-plus-lg me-1"></i>강 추가
+                        </button>
+                    </div>
+
+                    <div v-if="currentLecture.lessons.length === 0" class="alert alert-info">
+                        등록된 강이 없습니다. "강 추가" 버튼을 클릭하여 강을 추가해주세요.
+                    </div>
+
+                    <div class="list-group" v-else>
+                        <div class="list-group-item" v-for="(lesson, index) in currentLecture.lessons" :key="lesson.id">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ lesson.order }}강. {{ lesson.title }}</div>
+                                    <small class="text-muted">재생시간: {{ lesson.duration }}분</small>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary" @click="moveLessonUp(index)" :disabled="index === 0">
+                                        <i class="bi bi-arrow-up"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" @click="moveLessonDown(index)" :disabled="index === currentLecture.lessons.length - 1">
+                                        <i class="bi bi-arrow-down"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" @click="editLesson(lesson)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" @click="deleteLesson(lesson.id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,4 +247,36 @@
         </div>
     </div>
     <div class="modal-backdrop fade" :class="{ show: showCreateModal }" v-if="showCreateModal"></div>
+
+    <!-- 레슨 추가/수정 모달 -->
+    <div class="modal fade" :class="{ show: showLessonModal, 'd-block': showLessonModal }" tabindex="-1" v-if="showLessonModal" style="z-index: 1060;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ currentLesson.id ? '강 수정' : '강 추가' }}</h5>
+                    <button type="button" class="btn-close" @click="showLessonModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">강 제목 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" v-model="currentLesson.title" placeholder="예: 강의 소개">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">재생 시간 (분) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" v-model.number="currentLesson.duration" placeholder="예: 30">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">영상 업로드</label>
+                        <input type="file" class="form-control" accept="video/*">
+                        <small class="text-muted">MP4, AVI, MOV 형식 지원</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="showLessonModal = false">취소</button>
+                    <button type="button" class="btn btn-primary" @click="saveLesson">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" :class="{ show: showLessonModal }" v-if="showLessonModal" style="z-index: 1055;"></div>
 </div>
