@@ -338,36 +338,35 @@ export default {
 
         // 섹션 토글
         toggleSection(index, event) {
-            // 아이콘 모드에서는 한 번에 하나만 열림
-            if (this.sidebarIconMode) {
-                // 다른 섹션 모두 닫기
-                this.menuSections.forEach((section, idx) => {
-                    if (idx !== index) {
-                        section.isOpen = false;
-                    }
-                });
+            // 모든 모드에서 아코디언 동작: 한 번에 하나만 열림
+            // 다른 섹션 모두 닫기
+            this.menuSections.forEach((section, idx) => {
+                if (idx !== index) {
+                    section.isOpen = false;
+                }
+            });
 
-                // 플라이아웃 위치 계산 (클릭한 버튼의 위치)
-                if (event && event.currentTarget) {
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    const section = this.menuSections[index];
+            // 아이콘 모드에서만 플라이아웃 위치 계산
+            if (this.sidebarIconMode && event && event.currentTarget) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                const section = this.menuSections[index];
 
-                    // 메뉴 높이 추정 (헤더 60px + 각 항목 48px)
-                    const estimatedMenuHeight = 60 + (section.items.length * 48);
-                    const viewportHeight = window.innerHeight;
-                    const spaceBelow = viewportHeight - rect.top;
+                // 메뉴 높이 추정 (헤더 60px + 각 항목 48px)
+                const estimatedMenuHeight = 60 + (section.items.length * 48);
+                const viewportHeight = window.innerHeight;
+                const spaceBelow = viewportHeight - rect.top;
 
-                    // 화면 아래 공간이 부족한 경우
-                    if (spaceBelow < estimatedMenuHeight) {
-                        // 메뉴가 화면 하단을 넘지 않도록 위치를 위로 조정
-                        const adjustedTop = viewportHeight - estimatedMenuHeight - 20; // 20px 여유 공간
-                        section.flyoutTop = Math.max(70, adjustedTop); // 헤더 아래로는 내려가지 않도록 (70px)
-                    } else {
-                        // 공간이 충분하면 버튼 위치에 표시
-                        section.flyoutTop = rect.top;
-                    }
+                // 화면 아래 공간이 부족한 경우
+                if (spaceBelow < estimatedMenuHeight) {
+                    // 메뉴가 화면 하단을 넘지 않도록 위치를 위로 조정
+                    const adjustedTop = viewportHeight - estimatedMenuHeight - 20; // 20px 여유 공간
+                    section.flyoutTop = Math.max(70, adjustedTop); // 헤더 아래로는 내려가지 않도록 (70px)
+                } else {
+                    // 공간이 충분하면 버튼 위치에 표시
+                    section.flyoutTop = rect.top;
                 }
             }
+
             this.menuSections[index].isOpen = !this.menuSections[index].isOpen;
         },
 
