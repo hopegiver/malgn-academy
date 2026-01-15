@@ -22,6 +22,7 @@ export default {
                 title: '',
                 duration: 0,
                 videoUrl: '',
+                videoType: 'youtube', // 'upload', 'youtube', 'vimeo'
                 order: 1
             },
             stats: {
@@ -42,11 +43,11 @@ export default {
                     status: '공개',
                     description: '중등 수학의 기초를 다지는 강의입니다.',
                     lessons: [
-                        { id: 1, title: '강의 소개', duration: 25, videoUrl: '', order: 1 },
-                        { id: 2, title: '기본 개념 이해', duration: 45, videoUrl: '', order: 2 },
-                        { id: 3, title: '실습 문제 풀이', duration: 30, videoUrl: '', order: 3 },
-                        { id: 4, title: '심화 학습', duration: 50, videoUrl: '', order: 4 },
-                        { id: 5, title: '종합 정리', duration: 40, videoUrl: '', order: 5 }
+                        { id: 1, title: '강의 소개', duration: 25, videoUrl: 'https://www.youtube.com/watch?v=example1', videoType: 'youtube', order: 1 },
+                        { id: 2, title: '기본 개념 이해', duration: 45, videoUrl: 'https://www.youtube.com/watch?v=example2', videoType: 'youtube', order: 2 },
+                        { id: 3, title: '실습 문제 풀이', duration: 30, videoUrl: 'https://vimeo.com/example3', videoType: 'vimeo', order: 3 },
+                        { id: 4, title: '심화 학습', duration: 50, videoUrl: '', videoType: 'upload', order: 4 },
+                        { id: 5, title: '종합 정리', duration: 40, videoUrl: 'https://www.youtube.com/watch?v=example5', videoType: 'youtube', order: 5 }
                     ]
                 },
                 {
@@ -60,9 +61,9 @@ export default {
                     status: '공개',
                     description: '고등 영문법을 완벽하게 정복합니다.',
                     lessons: [
-                        { id: 1, title: '시제의 이해', duration: 60, videoUrl: '', order: 1 },
-                        { id: 2, title: '조동사 완벽 정복', duration: 55, videoUrl: '', order: 2 },
-                        { id: 3, title: '가정법 마스터', duration: 50, videoUrl: '', order: 3 }
+                        { id: 1, title: '시제의 이해', duration: 60, videoUrl: 'https://www.youtube.com/watch?v=english1', videoType: 'youtube', order: 1 },
+                        { id: 2, title: '조동사 완벽 정복', duration: 55, videoUrl: 'https://www.youtube.com/watch?v=english2', videoType: 'youtube', order: 2 },
+                        { id: 3, title: '가정법 마스터', duration: 50, videoUrl: 'https://vimeo.com/english3', videoType: 'vimeo', order: 3 }
                     ]
                 },
                 {
@@ -76,10 +77,10 @@ export default {
                     status: '공개',
                     description: '물리학의 기초 개념을 학습합니다.',
                     lessons: [
-                        { id: 1, title: '물리학이란?', duration: 30, videoUrl: '', order: 1 },
-                        { id: 2, title: '뉴턴의 운동 법칙', duration: 45, videoUrl: '', order: 2 },
-                        { id: 3, title: '에너지와 일', duration: 40, videoUrl: '', order: 3 },
-                        { id: 4, title: '운동량 보존', duration: 35, videoUrl: '', order: 4 }
+                        { id: 1, title: '물리학이란?', duration: 30, videoUrl: 'https://www.youtube.com/watch?v=physics1', videoType: 'youtube', order: 1 },
+                        { id: 2, title: '뉴턴의 운동 법칙', duration: 45, videoUrl: 'https://www.youtube.com/watch?v=physics2', videoType: 'youtube', order: 2 },
+                        { id: 3, title: '에너지와 일', duration: 40, videoUrl: 'https://vimeo.com/physics3', videoType: 'vimeo', order: 3 },
+                        { id: 4, title: '운동량 보존', duration: 35, videoUrl: '', videoType: 'upload', order: 4 }
                     ]
                 },
                 {
@@ -187,6 +188,7 @@ export default {
                 title: '',
                 duration: 0,
                 videoUrl: '',
+                videoType: 'youtube',
                 order: this.currentLecture.lessons.length + 1
             };
             this.showLessonModal = true;
@@ -255,6 +257,7 @@ export default {
                 title: '',
                 duration: 0,
                 videoUrl: '',
+                videoType: 'youtube',
                 order: 1
             };
         }

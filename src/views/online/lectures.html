@@ -219,7 +219,16 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="flex-grow-1">
                                     <div class="fw-semibold">{{ lesson.order }}강. {{ lesson.title }}</div>
-                                    <small class="text-muted">재생시간: {{ lesson.duration }}분</small>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <small class="text-muted">재생시간: {{ lesson.duration }}분</small>
+                                        <span class="badge" :class="{
+                                            'bg-secondary': lesson.videoType === 'upload',
+                                            'bg-danger': lesson.videoType === 'youtube',
+                                            'bg-info': lesson.videoType === 'vimeo'
+                                        }" style="font-size: 0.7rem;">
+                                            {{ lesson.videoType === 'upload' ? '파일' : lesson.videoType === 'youtube' ? 'YouTube' : 'Vimeo' }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-outline-secondary" @click="moveLessonUp(index)" :disabled="index === 0">
@@ -266,9 +275,27 @@
                         <input type="number" class="form-control" v-model.number="currentLesson.duration" placeholder="예: 30">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">영상 업로드</label>
+                        <label class="form-label fw-semibold">영상 유형 <span class="text-danger">*</span></label>
+                        <select class="form-select" v-model="currentLesson.videoType">
+                            <option value="upload">파일 업로드</option>
+                            <option value="youtube">YouTube 링크</option>
+                            <option value="vimeo">Vimeo 링크</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" v-if="currentLesson.videoType === 'upload'">
+                        <label class="form-label fw-semibold">영상 파일</label>
                         <input type="file" class="form-control" accept="video/*">
                         <small class="text-muted">MP4, AVI, MOV 형식 지원</small>
+                    </div>
+                    <div class="mb-3" v-if="currentLesson.videoType === 'youtube'">
+                        <label class="form-label fw-semibold">YouTube 링크</label>
+                        <input type="url" class="form-control" v-model="currentLesson.videoUrl" placeholder="예: https://www.youtube.com/watch?v=xxxxx">
+                        <small class="text-muted">YouTube 영상 URL을 입력하세요</small>
+                    </div>
+                    <div class="mb-3" v-if="currentLesson.videoType === 'vimeo'">
+                        <label class="form-label fw-semibold">Vimeo 링크</label>
+                        <input type="url" class="form-control" v-model="currentLesson.videoUrl" placeholder="예: https://vimeo.com/xxxxx">
+                        <small class="text-muted">Vimeo 영상 URL을 입력하세요</small>
                     </div>
                 </div>
                 <div class="modal-footer">
