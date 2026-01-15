@@ -523,10 +523,13 @@ export default {
                 section.isOpen = false;
             });
 
-            // 현재 경로에 해당하는 메뉴만 열기
-            const activeSection = this.menuSections.find(section => section.path === firstPath);
-            if (activeSection) {
-                activeSection.isOpen = true;
+            // 아이콘 모드가 아닐 때만 현재 경로에 해당하는 메뉴 열기
+            // (아이콘 모드에서는 사용자가 클릭할 때만 플라이아웃 표시)
+            if (!this.sidebarIconMode) {
+                const activeSection = this.menuSections.find(section => section.path === firstPath);
+                if (activeSection) {
+                    activeSection.isOpen = true;
+                }
             }
         },
 
