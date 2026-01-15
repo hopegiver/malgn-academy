@@ -330,7 +330,7 @@ export default {
         },
 
         // 섹션 토글
-        toggleSection(index) {
+        toggleSection(index, event) {
             // 아이콘 모드에서는 한 번에 하나만 열림
             if (this.sidebarIconMode) {
                 // 다른 섹션 모두 닫기
@@ -339,6 +339,12 @@ export default {
                         section.isOpen = false;
                     }
                 });
+
+                // 플라이아웃 위치 계산 (클릭한 버튼의 위치)
+                if (event && event.currentTarget) {
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    this.menuSections[index].flyoutTop = rect.top;
+                }
             }
             this.menuSections[index].isOpen = !this.menuSections[index].isOpen;
         },
@@ -357,6 +363,7 @@ export default {
                     title: '학생관리',
                     icon: 'bi-people-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'students',
                     items: [
                         { label: '학생 목록', icon: 'bi-person-lines-fill', path: 'students/list' },
@@ -369,6 +376,7 @@ export default {
                     title: '수업관리',
                     icon: 'bi-journal-bookmark-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'classes',
                     items: [
                         { label: '수업 관리', icon: 'bi-journal-bookmark', path: 'classes/manage' },
@@ -381,6 +389,7 @@ export default {
                     title: '수납관리',
                     icon: 'bi-wallet2',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'payments',
                     items: [
                         { label: '수납 처리', icon: 'bi-credit-card', path: 'payments/process' },
@@ -393,6 +402,7 @@ export default {
                     title: '출결관리',
                     icon: 'bi-check-circle-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'attendance',
                     items: [
                         { label: '출결 입력', icon: 'bi-check2-square', path: 'attendance/input' },
@@ -405,6 +415,7 @@ export default {
                     title: '성적관리',
                     icon: 'bi-trophy-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'grades',
                     items: [
                         { label: '성적 입력', icon: 'bi-pencil-square', path: 'grades/input' },
@@ -417,6 +428,7 @@ export default {
                     title: '온라인강의',
                     icon: 'bi-laptop-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'online',
                     items: [
                         { label: '강의 관리', icon: 'bi-camera-video', path: 'online/lectures' },
@@ -429,6 +441,7 @@ export default {
                     title: '홈페이지',
                     icon: 'bi-globe',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'website',
                     items: [
                         { label: '페이지 관리', icon: 'bi-file-earmark-richtext', path: 'website/pages' },
@@ -442,6 +455,7 @@ export default {
                     title: '소통관리',
                     icon: 'bi-chat-dots-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'communication',
                     items: [
                         { label: '메시지 발송', icon: 'bi-envelope', path: 'communication/message' },
@@ -454,6 +468,7 @@ export default {
                     title: '통계/리포트',
                     icon: 'bi-graph-up-arrow',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'reports',
                     items: [
                         { label: '운영 현황', icon: 'bi-pie-chart', path: 'reports/operation' },
@@ -465,6 +480,7 @@ export default {
                     title: '환경설정',
                     icon: 'bi-gear-fill',
                     isOpen: false,
+                    flyoutTop: 0,
                     path: 'settings',
                     items: [
                         { label: '학원 정보', icon: 'bi-building', path: 'settings/academy' },

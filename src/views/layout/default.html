@@ -105,7 +105,7 @@
                     <button class="menu-section-header d-flex justify-content-between align-items-center p-3 px-4"
                             :class="{ open: section.isOpen }"
                             :title="sidebarIconMode ? section.title : ''"
-                            @click="toggleSection(index)">
+                            @click="toggleSection(index, $event)">
                         <div class="d-flex align-items-center gap-3">
                             <i :class="'bi ' + section.icon" style="font-size: 1.25rem;" class="text-secondary"></i>
                             <span class="fw-semibold" style="font-size: 0.875rem;" v-show="!sidebarIconMode">{{ section.title }}</span>
@@ -129,7 +129,7 @@
                     </div>
 
                     <!-- 아이콘 모드: 플라이아웃 -->
-                    <div class="menu-flyout" v-show="sidebarIconMode && section.isOpen">
+                    <div class="menu-flyout" v-show="sidebarIconMode && section.isOpen" :style="{ top: (section.flyoutTop || 0) + 'px' }">
                         <div class="flyout-header p-3 border-bottom">
                             <h6 class="mb-0 fw-semibold">{{ section.title }}</h6>
                         </div>
