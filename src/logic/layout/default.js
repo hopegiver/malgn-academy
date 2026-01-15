@@ -359,13 +359,11 @@ export default {
 
                     // 화면 아래 공간이 부족한 경우
                     if (spaceBelow < estimatedMenuHeight) {
-                        // 화면 아래 여유 공간에 맞춰 max-height 설정
-                        const maxHeight = spaceBelow - 20; // 20px 여유 공간
-                        section.flyoutMaxHeight = maxHeight;
-                        section.flyoutTop = rect.top;
+                        // 메뉴가 화면 하단을 넘지 않도록 위치를 위로 조정
+                        const adjustedTop = viewportHeight - estimatedMenuHeight - 20; // 20px 여유 공간
+                        section.flyoutTop = Math.max(70, adjustedTop); // 헤더 아래로는 내려가지 않도록 (70px)
                     } else {
-                        // 공간이 충분하면 제한 없음
-                        section.flyoutMaxHeight = null;
+                        // 공간이 충분하면 버튼 위치에 표시
                         section.flyoutTop = rect.top;
                     }
                 }
@@ -388,7 +386,6 @@ export default {
                     icon: 'bi-people-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'students',
                     items: [
                         { label: '학생 목록', icon: 'bi-person-lines-fill', path: 'students/list' },
@@ -402,7 +399,6 @@ export default {
                     icon: 'bi-journal-bookmark-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'classes',
                     items: [
                         { label: '수업 관리', icon: 'bi-journal-bookmark', path: 'classes/manage' },
@@ -416,7 +412,6 @@ export default {
                     icon: 'bi-wallet2',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'payments',
                     items: [
                         { label: '수납 처리', icon: 'bi-credit-card', path: 'payments/process' },
@@ -430,7 +425,6 @@ export default {
                     icon: 'bi-check-circle-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'attendance',
                     items: [
                         { label: '출결 입력', icon: 'bi-check2-square', path: 'attendance/input' },
@@ -444,7 +438,6 @@ export default {
                     icon: 'bi-trophy-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'grades',
                     items: [
                         { label: '성적 입력', icon: 'bi-pencil-square', path: 'grades/input' },
@@ -458,7 +451,6 @@ export default {
                     icon: 'bi-laptop-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'online',
                     items: [
                         { label: '강의 관리', icon: 'bi-camera-video', path: 'online/lectures' },
@@ -472,7 +464,6 @@ export default {
                     icon: 'bi-globe',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'website',
                     items: [
                         { label: '페이지 관리', icon: 'bi-file-earmark-richtext', path: 'website/pages' },
@@ -487,7 +478,6 @@ export default {
                     icon: 'bi-chat-dots-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'communication',
                     items: [
                         { label: '메시지 발송', icon: 'bi-envelope', path: 'communication/message' },
@@ -501,7 +491,6 @@ export default {
                     icon: 'bi-graph-up-arrow',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'reports',
                     items: [
                         { label: '운영 현황', icon: 'bi-pie-chart', path: 'reports/operation' },
@@ -514,7 +503,6 @@ export default {
                     icon: 'bi-gear-fill',
                     isOpen: false,
                     flyoutTop: 0,
-                    flyoutMaxHeight: null,
                     path: 'settings',
                     items: [
                         { label: '학원 정보', icon: 'bi-building', path: 'settings/academy' },
