@@ -5,6 +5,7 @@ export default {
             filterBoard: '',
             filterStatus: '',
             showCreateModal: false,
+            showBoardManageModal: false,
             currentPost: {
                 id: null,
                 board: '',
@@ -13,6 +14,21 @@ export default {
                 status: '게시',
                 author: '관리자'
             },
+            boards: [
+                { id: 1, name: '공지사항', type: '공지' },
+                { id: 2, name: '학원소식', type: '일반' },
+                { id: 3, name: '자료실', type: '자료' },
+                { id: 4, name: '갤러리', type: '갤러리' }
+            ],
+            newBoard: {
+                name: '',
+                type: ''
+            },
+            editBoard: {
+                name: '',
+                type: ''
+            },
+            editingBoardId: null,
             stats: {
                 totalPosts: 156,
                 weekPosts: 12,
@@ -146,6 +162,96 @@ export default {
                 status: '게시',
                 author: '관리자'
             };
+        },
+        addBoard() {
+            if (!this.newBoard.name.trim()) {
+                alert('게시판 이름을 입력해주세요.');
+                return;
+            }
+            if (!this.newBoard.type) {
+                alert('유형을 선택해주세요.');
+                return;
+            }
+
+            // 중복 체크
+            if (this.boards.some(b => b.name === this.newBoard.name.trim())) {
+                alert('이미 존재하는 게시판 이름입니다.');
+                return;
+            }
+
+            this.boards.push({
+                id: Date.now(),
+                name: this.newBoard.name.trim(),
+                type: this.newBoard.type
+            });
+
+            // 폼 초기화
+            this.newBoard = { name: '', type: '' };
+            alert('게시판이 추가되었습니다.');
+        },
+        startEditBoard(board) {
+            this.editingBoardId = board.id;
+            this.editBoard = { name: board.name, type: board.type };
+        },
+        saveEditBoard(boardId) {
+            if (!this.editBoard.name.trim()) {
+                alert('게시판 이름을 입력해주세요.');
+                return;
+            }
+            if (!this.editBoard.type) {
+                alert('유형을 선택해주세요.');
+                return;
+            }
+
+            // 중복 체크 (자기 자신 제외)
+            if (this.boards.some(b => b.id !== boardId && b.name === this.editBoard.name.trim())) {
+                alert('이미 존재하는 게시판 이름입니다.');
+                return;
+            }
+
+            const index = this.boards.findIndex(b => b.id === boardId);
+            if (index !== -1) {
+                const oldName = this.boards[index].name;
+                this.boards[index].name = this.editBoard.name.trim();
+                this.boards[index].type = this.editBoard.type;
+
+                // 게시글의 게시판 이름도 업데이트
+                this.posts.forEach(post => {
+                    if (post.board === oldName) {
+                        post.board = this.editBoard.name.trim();
+                    }
+                });
+
+                alert('게시판이 수정되었습니다.');
+            }
+
+            this.editingBoardId = null;
+            this.editBoard = { name: '', type: '' };
+        },
+        cancelEditBoard() {
+            this.editingBoardId = null;
+            this.editBoard = { name: '', type: '' };
+        },
+        deleteBoard(boardId) {
+            const board = this.boards.find(b => b.id === boardId);
+            if (!board) return;
+
+            // 해당 게시판에 게시글이 있는지 확인
+            const hasPost = this.posts.some(post => post.board === board.name);
+            if (hasPost) {
+                if (!confirm(`'${board.name}' 게시판에 게시글이 있습니다.\n게시판을 삭제하면 해당 게시글도 모두 삭제됩니다.\n정말 삭제하시겠습니까?`)) {
+                    return;
+                }
+                // 해당 게시판의 게시글도 삭제
+                this.posts = this.posts.filter(post => post.board !== board.name);
+            } else {
+                if (!confirm(`'${board.name}' 게시판을 삭제하시겠습니까?`)) {
+                    return;
+                }
+            }
+
+            this.boards = this.boards.filter(b => b.id !== boardId);
+            alert('게시판이 삭제되었습니다.');
         }
     }
 };
