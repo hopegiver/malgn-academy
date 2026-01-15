@@ -277,15 +277,9 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">영상 유형 <span class="text-danger">*</span></label>
                         <select class="form-select" v-model="currentLesson.videoType">
-                            <option value="upload">파일 업로드</option>
                             <option value="youtube">YouTube 링크</option>
                             <option value="vimeo">Vimeo 링크</option>
                         </select>
-                    </div>
-                    <div class="mb-3" v-if="currentLesson.videoType === 'upload'">
-                        <label class="form-label fw-semibold">영상 파일</label>
-                        <input type="file" class="form-control" accept="video/*">
-                        <small class="text-muted">MP4, AVI, MOV 형식 지원</small>
                     </div>
                     <div class="mb-3" v-if="currentLesson.videoType === 'youtube'">
                         <label class="form-label fw-semibold">YouTube 링크</label>
